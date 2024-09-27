@@ -4,10 +4,22 @@
 
 l'app è un applicazione che arriva in aiuto a tutti i turisti, serve per - l'organizzazione di viaggi - e avere un elenco dettagliato delle migliori attrazioni per quel luogo, consultando le recensioni sui vari posti nel mondo, cosi da poter scegliere il proprio viaggio al meglio (la prenotazione di hotel).
 
+
+----------LOGIN-----------
+
 {
   "email": "utente@example.com",
   "password": "password123"
 }
+
+  "password_requirements": 
+  {
+    "min_length": 8,
+    "uppercase_required": true,
+    "lowercase_required": true,
+    "numbers_required": true,
+    "special_characters_required": false
+  }
 
 {
   "status": "success",
@@ -23,43 +35,62 @@ l'app è un applicazione che arriva in aiuto a tutti i turisti, serve per - l'or
       "type": "Monumento storico",
       "description": "Un antico anfiteatro romano simbolo della città."
     },
+    
     {
       "place": "Fontana di Trevi",
       "type": "Fontana",
       "description": "Una delle fontane più famose al mondo, dove lanciare una moneta porta fortuna."
     },
+    
     {
       "place": "Piazza di Spagna",
       "type": "Piazza",
       "description": "Un'iconica piazza con la famosa scalinata di Trinità dei Monti."
     }
   ],
-  "travel_history": [
-    {
-      "destination": "Parigi, Francia",
-      "travel_dates": {
-        "departure": "2023-06-10",
-        "return": "2023-06-17"
-      },
-      "accommodation": "Hotel Le Paris",
-      "favorite_places": [
-        "Tour Eiffel",
-        "Museo del Louvre",
-        "Montmartre"
-      ]
-    },
-    {
-      "destination": "New York, USA",
-      "travel_dates": {
-        "departure": "2022-12-05",
-        "return": "2022-12-12"
-      },
-      "accommodation": "The Plaza Hotel",
-      "favorite_places": [
-        "Central Park",
-        "Statua della Libertà",
-        "Times Square"
-      ]
     }
   ]
 }
+
+
+---------CAMBIO LINGUA---------
+{
+  "user_id": "12345",
+  "new_language": {
+    "code": "it",
+    "name": "Italiano"
+  }
+}
+
+
+{
+  "status": "success",
+  "message": "Lingua cambiata con successo.",
+  "current_language": {
+    "code": "it",
+    "name": "Italiano"
+  },
+  "available_languages": [
+  
+    {
+      "code": "en",
+      "name": "English"
+    },
+    
+    {
+      "code": "fr",
+      "name": "Français"
+    },
+    
+    {
+      "code": "de",
+      "name": "Deutsch"
+    },
+    
+    {
+      "code": "es",
+      "name": "Español"
+    }
+  ]
+}
+
