@@ -44,7 +44,6 @@ app.post('/login', (req, res) => {
     });
 });
 
-
 // Endpoint per ottenere la lista degli utenti
 app.get('/utenti', (req, res) => {
     fs.readFile('utenti.json', 'utf8', (err, data) => {
@@ -102,6 +101,48 @@ app.post('/utenti', (req, res) => {
         }
     });
 });
+
+//DELETE
+// Endpoint per eliminare un utente
+app.delete('/delete', (req, res) => {
+    const { username } = req.body;
+
+    if (!username) {
+        return res.status(400).json({ message: 'Username non fornito' });
+    }
+
+    // Legge il file utenti.json
+    fs.readFile('utenti.json', 'utf8', (err, data) => {
+        if (err) {
+            return res.status(500).json({ message: 'Errore nella lettura del file utenti.json' });
+        }
+
+        try {
+            let utenti = JSON.parse(data);
+
+            // Cerca l'utente nel file
+            const userIndex = utenti.findIndex(u => u.user === username);
+            if (userIndex === -1) {
+                return res.status(404).json({ message: 'Utente non trovato' });
+            }
+
+            // Rimuove l'utente dall'array
+            utenti.splice(userIndex, 1);
+
+            // Salva il file aggiornato
+            fs.writeFile('utenti.json', JSON.stringify(utenti, null, 2), (err) => {
+                if (err) {
+                    return res.status(500).json({ message: 'Errore nel salvataggio del file utenti.json' });
+                }
+
+                res.status(200).json({ message: `Utente ${username} eliminato con successo` });
+            });
+        } catch (err) {
+            return res.status(500).json({ message: 'Errore nel parsing del file utenti.json' });
+        }
+    });
+});
+
 
 // Avviare il server sulla porta 3000
 const PORT = 3000;
