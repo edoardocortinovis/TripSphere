@@ -18,7 +18,7 @@ l'app è un applicazione che arriva in aiuto a tutti i turisti, serve per - l'or
   }
 
 { 
-"status": "success", "message": "Benvenuto, utente!", "travel_info": { "destination": "Roma, Italia", "departure_date": "2024-10-15", "return_date": "2024-10-22", }, "favorite_places": [ { "place": "Colosseo", "type": "Monumento storico", "description": "Un antico anfiteatro romano simbolo della città." 
+"status": "success", "message": "Benvenuto, utente!"
 },
 
 {
