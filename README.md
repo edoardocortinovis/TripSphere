@@ -2,6 +2,14 @@
 
 *TtripSphere è un' applicazione per l'organizzazione di viaggi* 
 
+Descrizione (evidenziare una possibile tag line)
+TARGET
+PROBLEMA 
+COMPETITOR
+TECNOLOGIE
+
+
+
 l'app è un applicazione che arriva in aiuto a tutti i turisti, serve per - l'organizzazione di viaggi - e avere un elenco dettagliato delle migliori attrazioni per quel luogo, consultando le recensioni sui vari posti nel mondo, cosi da poter scegliere il proprio viaggio al meglio (la prenotazione di hotel).
 
 ------------------------------------------
@@ -68,7 +76,7 @@ l'app è un applicazione che arriva in aiuto a tutti i turisti, serve per - l'or
    - Le attrazioni possono avere politiche di prezzo differenti per studenti, insegnanti o scuole.
    - Devono essere gestiti sconti e prezzi agevolati per queste categorie speciali.
 
-
+https://yuml.me/ledocorti/253d3f96.svg
 
 ------------------------------------------
 
