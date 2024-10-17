@@ -120,6 +120,7 @@ Metodo: GET
     "type": "Fontana",
     "description": "Una delle fontane più famose al mondo, dove lanciare una moneta porta fortuna."
   },
+  
   {
     "place": "Piazza di Spagna",
     "type": "Piazza",
@@ -141,6 +142,7 @@ Metodo: POST
     "code": "it",
     "name": "Italiano"
   }
+
 }
 
 **Risposta:**
@@ -153,6 +155,7 @@ Metodo: POST
     "name": "Italiano"
   },
   "available_languages": [
+  
     {
       "code": "en",
       "name": "English"
