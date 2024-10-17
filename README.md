@@ -120,13 +120,11 @@ Metodo: GET
     "type": "Fontana",
     "description": "Una delle fontane più famose al mondo, dove lanciare una moneta porta fortuna."
   },
-  
   {
     "place": "Piazza di Spagna",
     "type": "Piazza",
     "description": "Un'iconica piazza con la famosa scalinata di Trinità dei Monti."
-  }
-  
+  } 
 ]
 
 
@@ -136,7 +134,6 @@ Endpoint: /change-language
 Metodo: POST
 
 **Richiesta:**
-
 
 {
   "user_id": "12345",
@@ -160,7 +157,6 @@ Metodo: POST
       "code": "en",
       "name": "English"
     },
-    
     {
       "code": "fr",
       "name": "Français"
