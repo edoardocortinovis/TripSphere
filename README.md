@@ -8,9 +8,18 @@ l'app è un applicazione che arriva in aiuto a tutti i turisti, serve per - l'or
 
 { "email": "utente@example.com", "password": "password123" }
 
-"password_requirements": { "min_length": 8, "uppercase_required": true, "lowercase_required": true, "numbers_required": true, "special_characters_required": false }
+"password_requirements": 
+{ 
+  "min_length": 8, 
+  "uppercase_required": true, 
+  "lowercase_required": true, 
+  "numbers_required": true, 
+  "special_characters_required": false 
+  }
 
-{ "status": "success", "message": "Benvenuto, utente!", "travel_info": { "destination": "Roma, Italia", "departure_date": "2024-10-15", "return_date": "2024-10-22", }, "favorite_places": [ { "place": "Colosseo", "type": "Monumento storico", "description": "Un antico anfiteatro romano simbolo della città." },
+{ 
+"status": "success", "message": "Benvenuto, utente!", "travel_info": { "destination": "Roma, Italia", "departure_date": "2024-10-15", "return_date": "2024-10-22", }, "favorite_places": [ { "place": "Colosseo", "type": "Monumento storico", "description": "Un antico anfiteatro romano simbolo della città." 
+},
 
 {
   "place": "Fontana di Trevi",
@@ -23,9 +32,14 @@ l'app è un applicazione che arriva in aiuto a tutti i turisti, serve per - l'or
   "type": "Piazza",
   "description": "Un'iconica piazza con la famosa scalinata di Trinità dei Monti."
 }
-], } ] }
+], 
+} 
+] 
+}
 
----------CAMBIO LINGUA--------- { "user_id": "12345", "new_language": { "code": "it", "name": "Italiano" } }
+---------CAMBIO LINGUA--------- 
+
+{ "user_id": "12345", "new_language": { "code": "it", "name": "Italiano" } }
 
 { "status": "success", "message": "Lingua cambiata con successo.", "current_language": { "code": "it", "name": "Italiano" }, "available_languages": [
 
