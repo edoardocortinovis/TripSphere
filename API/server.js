@@ -1,8 +1,11 @@
 const express = require('express');
 const sqlite3 = require('sqlite3');
+const cors = require('cors');
+
 const app = express();
 const port = 3000;
 
+// Configurazione del database SQLite
 let db = new sqlite3.Database('./database.db', (err) => {
     if (err) {
         return console.error(err.message);
@@ -10,55 +13,31 @@ let db = new sqlite3.Database('./database.db', (err) => {
     console.log('Connesso al database');
 });
 
-app.use(express.json());
+// Middleware
+app.use(cors()); // Abilita CORS
+app.use(express.json()); // Per poter gestire i JSON nel body delle richieste
 
-// Creazione della tabella utenti con i nuovi campi
-db.run(`CREATE TABLE IF NOT EXISTS utenti 
-( id INTEGER PRIMARY KEY AUTOINCREMENT,
-  nome TEXT,
-  cognome TEXT,
-  data TEXT,  -- Data di nascita
-  nazionalita TEXT,
-  email TEXT,
-  password TEXT)`);
+// Creazione della tabella utenti
+db.run(`CREATE TABLE IF NOT EXISTS utenti (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT,
+    cognome TEXT,
+    data TEXT,
+    nazionalita TEXT,
+    email TEXT UNIQUE,
+    password TEXT
+)`);
 
-// Endpoint per creare un nuovo utente
+// Endpoint per registrare un nuovo utente
 app.post('/utenti', (req, res) => {
     const { nome, cognome, data, nazionalita, email, password } = req.body;
-    db.run(`INSERT INTO utenti (nome, cognome, data, nazionalita, email, password) VALUES (?, ?, ?, ?, ?, ?)`, 
-        [nome, cognome, data, nazionalita, email, password], 
-        function(err) {
+    db.run(`INSERT INTO utenti (nome, cognome, data, nazionalita, email, password) VALUES (?, ?, ?, ?, ?, ?)`,
+        [nome, cognome, data, nazionalita, email, password],
+        function (err) {
             if (err) {
                 return res.status(500).json({ error: err.message });
             }
             res.json({ message: 'Nuovo utente creato', id: this.lastID });
-        });
-});
-
-// Endpoint per ottenere tutti gli utenti
-app.get('/utenti', (req, res) => {
-    db.all('SELECT * FROM utenti', [], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json({ users: rows });
-    });
-});
-
-// Endpoint per aggiornare un utente
-app.put('/utenti/:id', (req, res) => {
-    const { id } = req.params;
-    const { nome, cognome, eta, nazionalita, email, password } = req.body;
-    db.run(`UPDATE utenti SET nome = ?, cognome = ?, data = ?, nazionalita = ?, email = ?, password = ? WHERE id = ?`, 
-        [nome, cognome, eta, nazionalita, email, password, id], 
-        function(err) {
-            if (err) {
-                return res.status(500).json({ error: err.message });
-            }
-            if (this.changes === 0) {
-                return res.status(404).json({ message: 'Utente non trovato' });
-            }
-            res.json({ message: 'Utente aggiornato con successo' });
         });
 });
 
@@ -88,6 +67,7 @@ process.on('SIGINT', () => {
     });
 });
 
+// Avvio del server
 app.listen(port, () => {
     console.log(`Server API in esecuzione su http://localhost:${port}`);
 });
