@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
-    <h2>Login</h2>
-    <form @submit.prevent="loginUser">
+    <h2>Registrati</h2>
+    <form @submit.prevent="registerUser">
       <div class="form-group">
         <label for="nome">Nome</label>
         <input type="text" id="nome" v-model="nome" required />
@@ -32,13 +32,14 @@
         <input type="password" id="password" v-model="password" required />
       </div>
 
-      <button type="submit">Login</button>
+      <button type="submit">Registrati</button>
 
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+      <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
     </form>
     
-    <!-- Link alla pagina di registrazione -->
-    <p>Non hai un account? <router-link to="/accedi">Accedi qui</router-link></p>
+    <!-- Link alla pagina di login -->
+    <p>Hai già un account? <router-link to="/login">Accedi qui</router-link></p>
   </div>
 </template>
 
@@ -53,11 +54,12 @@ export default {
       email: '',
       password: '',
       errorMessage: '',
+      successMessage: '',
     };
   },
   methods: {
-    async loginUser() {
-      const loginData = {
+    async registerUser() {
+      const userData = {
         nome: this.nome,
         cognome: this.cognome,
         data: this.data,
@@ -67,31 +69,31 @@ export default {
       };
 
       try {
-        const response = await fetch('http://localhost:3000/utenti', {
+        const response = await fetch('https:localhost/utenti', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(loginData),
+          body: JSON.stringify(userData),
         });
 
         const result = await response.json();
 
         if (response.ok) {
-          // Memorizza i dati dell'utente nel local storage o nello stato dell'applicazione
-          localStorage.setItem('user', JSON.stringify(result.user));
+          // Se la registrazione è andata a buon fine
+          this.successMessage = 'Registrazione avvenuta con successo!';
+          this.errorMessage = ''; // Pulisci eventuali messaggi di errore
           
-          // Login riuscito
-          alert('Login riuscito!');
-          
-          // Qui puoi reindirizzare l'utente ad un'altra pagina, per esempio:
-          // this.$router.push('/dashboard');
+          // Puoi anche reindirizzare l'utente a un'altra pagina, se necessario
+          // this.$router.push('/login');
         } else {
           // Mostra un messaggio di errore
-          this.errorMessage = result.message || 'Errore di login.';
+          this.errorMessage = result.message || 'Errore nella registrazione.';
+          this.successMessage = ''; // Pulisci eventuali messaggi di successo
         }
       } catch (error) {
         this.errorMessage = 'Errore di connessione al server.';
+        this.successMessage = ''; // Pulisci eventuali messaggi di successo
       }
     },
   },
@@ -124,6 +126,10 @@ button {
 }
 .error-message {
   color: red;
+  margin-top: 10px;
+}
+.success-message {
+  color: green;
   margin-top: 10px;
 }
 </style>
