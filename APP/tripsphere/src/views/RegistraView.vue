@@ -37,7 +37,7 @@
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
     </form>
-    
+
     <!-- Link alla pagina di login -->
     <p>Hai già un account? <router-link to="/login">Accedi qui</router-link></p>
   </div>
@@ -69,7 +69,7 @@ export default {
       };
 
       try {
-        const response = await fetch('https:localhost/utenti', {
+        const response = await fetch('http://localhost:3000/utenti', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ export default {
           // Se la registrazione è andata a buon fine
           this.successMessage = 'Registrazione avvenuta con successo!';
           this.errorMessage = ''; // Pulisci eventuali messaggi di errore
-          
+
           // Puoi anche reindirizzare l'utente a un'altra pagina, se necessario
           // this.$router.push('/login');
         } else {
@@ -93,7 +93,7 @@ export default {
         }
       } catch (error) {
         this.errorMessage = 'Errore di connessione al server.';
-        this.successMessage = ''; // Pulisci eventuali messaggi di successo
+        //this.successMessage = ''; // Pulisci eventuali messaggi di successo
       }
     },
   },
@@ -108,14 +108,17 @@ export default {
   border: 1px solid #ccc;
   border-radius: 5px;
 }
+
 .form-group {
   margin-bottom: 15px;
 }
+
 input {
   width: 100%;
   padding: 8px;
   margin-top: 5px;
 }
+
 button {
   width: 100%;
   padding: 10px;
@@ -124,10 +127,12 @@ button {
   border: none;
   border-radius: 5px;
 }
+
 .error-message {
   color: red;
   margin-top: 10px;
 }
+
 .success-message {
   color: green;
   margin-top: 10px;
