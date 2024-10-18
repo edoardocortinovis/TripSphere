@@ -1,10 +1,18 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
-  <router-view/>
+  <div id="app">
+    <nav>
+        <router-link to="/">Home</router-link> <!-- Collegamento alla home -->
+        <router-link to="/registra">Registra</router-link> <!-- Collegamento alla home -->
+    </nav>
+    <router-view />
+  </div>
 </template>
+
+<script>
+export default {
+  name: 'App',
+};
+</script>
 
 <style>
 #app {
@@ -16,12 +24,14 @@
 }
 
 nav {
-  padding: 30px;
+  padding: 20px;
 }
 
 nav a {
   font-weight: bold;
   color: #2c3e50;
+  text-decoration: none;
+  margin: 0 15px;
 }
 
 nav a.router-link-exact-active {
