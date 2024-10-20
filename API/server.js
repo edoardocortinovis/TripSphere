@@ -13,9 +13,14 @@ let db = new sqlite3.Database('./database.db', (err) => {
     console.log('Connesso al database');
 });
 
-// Middleware
-app.use(cors()); // Abilita CORS
-app.use(express.json()); // Per poter gestire i JSON nel body delle richieste
+// Configurazione CORS
+const corsOptions = {
+  origin: 'http://localhost:8080', // Assicurati che questo sia l'URL del tuo frontend
+  optionsSuccessStatus: 200,       // Per risolvere problemi con i browser più vecchi
+};
+
+app.use(cors(corsOptions)); // Applica il middleware CORS con la configurazione specificata
+app.use(express.json());    // Per poter gestire i JSON nel body delle richieste
 
 // Creazione della tabella utenti
 db.run(`CREATE TABLE IF NOT EXISTS utenti (
