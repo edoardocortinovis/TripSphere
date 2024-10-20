@@ -69,7 +69,7 @@ export default {
       };
 
       try {
-        const response = await fetch('https:localhost/utenti', {
+        const response = await fetch('http:localhost/utenti', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
