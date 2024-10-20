@@ -32,6 +32,8 @@
         <input type="password" id="password" v-model="password" required />
       </div>
 
+      <p>DIOCANE</p>
+
       <button type="submit">Registrati</button>
 
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
