@@ -32,18 +32,16 @@
         <input type="password" id="password" v-model="password" required />
       </div>
 
-      <p>DIOCANE</p>
-
-      <button type="submit">Registrati</button>
+      <button type="submit" class="submit-button">Registrati</button>
 
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
     </form>
 
-    <!-- Link alla pagina di login -->
-    <p>Hai già un account? <router-link to="/login">Accedi qui</router-link></p>
+    <p class="login-link">Hai già un account? <router-link to="/login">Accedi qui</router-link></p>
   </div>
 </template>
+
 
 <script>
 export default {
@@ -106,37 +104,87 @@ export default {
 .login-container {
   max-width: 400px;
   margin: 0 auto;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  padding: 2rem;
+  background-color: #f9f9f9;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+h2 {
+  font-size: 24px;
+  margin-bottom: 1.5rem;
+  color: #333;
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 1.2rem;
+  text-align: left;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+  color: #555;
 }
 
 input {
-  width: 100%;
-  padding: 8px;
-  margin-top: 5px;
+  width: calc(100% - 10px); /* Larghezza ridotta per creare spazio */
+  padding: 0.75rem;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  background-color: #fff;
+  color: #333;
+  margin-right: 10px; /* Spazio a destra */
+  outline: none;
+  transition: border-color 0.3s;
 }
 
-button {
+input:focus {
+  border-color: #4CAF50;
+}
+
+.submit-button {
   width: 100%;
-  padding: 10px;
+  padding: 0.8rem;
   background-color: #4CAF50;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 12px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+  background-color: #45a049;
 }
 
 .error-message {
-  color: red;
-  margin-top: 10px;
+  color: #e74c3c;
+  margin-top: 1rem;
 }
 
 .success-message {
-  color: green;
-  margin-top: 10px;
+  color: #2ecc71;
+  margin-top: 1rem;
+}
+
+.login-link {
+  margin-top: 2rem;
+  font-size: 14px;
+}
+
+.login-link a {
+  color: #4CAF50;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.login-link a:hover {
+  text-decoration: underline;
 }
 </style>
+
