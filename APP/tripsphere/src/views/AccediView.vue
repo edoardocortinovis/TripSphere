@@ -66,7 +66,7 @@ export default {
           localStorage.setItem('user', JSON.stringify(result.user));
 
           // Reindirizza l'utente alla dashboard o altra pagina
-          this.$router.push('/dashboard');
+          this.$router.push('/home');
         } else {
           // Gestisci messaggio di errore (es. credenziali errate)
           this.errorMessage = result.message || 'Credenziali errate.';

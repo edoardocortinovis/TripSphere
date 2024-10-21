@@ -85,7 +85,7 @@ export default {
           this.errorMessage = ''; // Pulisci eventuali messaggi di errore
 
           // Puoi anche reindirizzare l'utente a un'altra pagina, se necessario
-          this.$router.push('/registra');
+          this.$router.push('/home');
         } else {
           // Mostra un messaggio di errore
           this.errorMessage = result.message || 'Errore nella registrazione.';
