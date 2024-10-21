@@ -2,28 +2,18 @@
   <div class="home">
     <div class="content">
       <div class="overlay">
-        <h1>Trip Sphere</h1>
+        <h1>TripSphere</h1>
         <p>Esplora il mondo con noi!</p>
-        <button @click="goToAccedi">Accedi</button>
-        <button @click="goToRegistra">Registrati</button>
-      </div>
-      <div class="features">
-        <h2>Le nostre funzionalità</h2>
-        <ul>
-          <li>🌍 Scopri nuove destinazioni</li>
-          <li>✈️ Prenota voli e hotel</li>
-          <li>🗺️ Crea il tuo itinerario personalizzato</li>
-          <li>🤝 Unisciti alla nostra comunità di viaggiatori</li>
-        </ul>
+        <div class="button-container">
+          <button @click="goToAccedi">Accedi</button>
+          <button @click="goToRegistra">Registrati</button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-//import AccediView from './AccediView.vue';
-//import RegistraView from './RegistraView.vue';
-
 export default {
   name: 'HomeView',
   methods: {
@@ -50,31 +40,44 @@ export default {
   justify-content: center; /* Allinea orizzontalmente al centro */
   background-image: url('@/assets/aereoporto.png'); /* Usa il percorso corretto */
   background-size: cover; /* Assicura che l'immagine copra l'intera area */
-  background-position: center; /* Centra l'immagine */ /* Riduce la luminosità dell'immagine */
+  background-position: center; /* Centra l'immagine */
 }
 
 .content {
   display: flex; /* Usa Flexbox per allineare i contenuti */
-  justify-content: space-between; /* Spazio tra le colonne */
+  justify-content: center; /* Centra i contenuti */
   width: 80%; /* Larghezza del contenitore per le colonne */
 }
 
 .overlay {
-  flex: 1; /* Prende una porzione della larghezza */
-  margin-right: 20px; /* Margine destro per separare dall'altra colonna */
   z-index: 2;
-  background-color: rgba(0, 0, 0, 0.5); /* Overlay semi-trasparente */
+  background-color: rgba(0, 0, 0, 0.7); /* Overlay semi-trasparente */
   color: white;
-  padding: 20px;
-  text-align: left; /* Allinea il testo a sinistra */
+  padding: 40px; /* Maggiore padding per un aspetto più arioso */
+  text-align: center; /* Allinea il testo al centro */
   border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* Ombra per il titolo */
 }
 
-.features {
-  flex: 1; /* Prende una porzione della larghezza */
-  z-index: 2;
-  color: white;
-  text-align: left; /* Allinea il testo a sinistra */
+.button-container {
+  display: flex;
+  justify-content: center; /* Centra i bottoni */
+  margin-top: 20px; /* Spaziatura sopra i bottoni */
+}
+
+button {
+  background-color: #ffffff; /* Colore verde */
+  color: black;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  margin: 0 10px; /* Margini laterali per i pulsanti */
+}
+
+button:hover {
+  background-color: #e2e2e2; /* Colore verde scuro al passaggio del mouse */
 }
 
 h1 {
@@ -84,36 +87,5 @@ h1 {
 
 p {
   font-size: 1.5em;
-}
-
-button {
-  background-color: #4CAF50; /* Colore verde */
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1em;
-  margin-top: 20px;
-  margin-right: 10px; /* Margine destro per il pulsante di registrazione */
-}
-
-button:hover {
-  background-color: #45a049; /* Colore verde scuro al passaggio del mouse */
-}
-
-.features h2 {
-  font-size: 2em;
-  margin-bottom: 10px;
-}
-
-.features ul {
-  list-style-type: none; /* Rimuove i punti dalla lista */
-  padding: 0; /* Rimuove il padding della lista */
-}
-
-.features li {
-  font-size: 1.2em; /* Dimensione del testo della lista */
-  margin: 5px 0; /* Spaziatura tra gli elementi della lista */
 }
 </style>
