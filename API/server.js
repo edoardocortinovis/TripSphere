@@ -34,7 +34,7 @@ db.run(`CREATE TABLE IF NOT EXISTS utenti (
 )`);
 
 // Endpoint per registrare un nuovo utente
-app.post('/utenti', (req, res) => {
+app.post('/registra', (req, res) => {
     const { nome, cognome, data, nazionalita, email, password } = req.body;
     db.run(`INSERT INTO utenti (nome, cognome, data, nazionalita, email, password) VALUES (?, ?, ?, ?, ?, ?)`,
         [nome, cognome, data, nazionalita, email, password],
