@@ -38,7 +38,7 @@
       <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
     </form>
 
-    <p class="login-link">Hai già un account? <router-link to="/login">Accedi qui</router-link></p>
+    <p class="login-link">Hai già un account? <router-link to="/accedi">Accedi qui</router-link></p>
   </div>
 </template>
 

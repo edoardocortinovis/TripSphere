@@ -46,8 +46,8 @@ app.post('/registra', (req, res) => {
         });
 });
 
-// Endpoint per effettuare il login
-app.post('/login', (req, res) => {
+// Endpoint per effettuare il accesso
+app.post('/accedi', (req, res) => {
     const { email, password } = req.body;
     db.get(`SELECT * FROM utenti WHERE email = ? AND password = ?`, [email, password], (err, row) => {
         if (err) {
@@ -60,6 +60,7 @@ app.post('/login', (req, res) => {
         }
     });
 });
+
 
 // Chiusura del database in modo sicuro
 process.on('SIGINT', () => {
