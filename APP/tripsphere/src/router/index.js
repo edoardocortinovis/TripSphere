@@ -5,7 +5,7 @@ import AccediView from '../views/AccediView.vue';
 
 const routes = [
   {
-    path: '/home',
+    path: '/',
     name: 'home',
     component: HomeView,
   },

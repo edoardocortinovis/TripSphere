@@ -1,33 +1,37 @@
 <template>
   <div class="home">
-    <img src="/APP/tripsphere/src/assets/aereoporto.png" alt="Logo" class="logo">
-    <div class="overlay">
-      <h1>Trip Sphere</h1>
-      <p>Esplora il mondo con noi!</p>
-      <button @click="goToLogin">Accedi</button>
-      <button @click="goToRegister">Registrati</button>
-    </div>
-    <div class="features">
-      <h2>Le nostre funzionalità</h2>
-      <ul>
-        <li>🌍 Scopri nuove destinazioni</li>
-        <li>✈️ Prenota voli e hotel</li>
-        <li>🗺️ Crea il tuo itinerario personalizzato</li>
-        <li>🤝 Unisciti alla nostra comunità di viaggiatori</li>
-      </ul>
+    <div class="content">
+      <div class="overlay">
+        <h1>Trip Sphere</h1>
+        <p>Esplora il mondo con noi!</p>
+        <button @click="goToAccedi">Accedi</button>
+        <button @click="goToRegistra">Registrati</button>
+      </div>
+      <div class="features">
+        <h2>Le nostre funzionalità</h2>
+        <ul>
+          <li>🌍 Scopri nuove destinazioni</li>
+          <li>✈️ Prenota voli e hotel</li>
+          <li>🗺️ Crea il tuo itinerario personalizzato</li>
+          <li>🤝 Unisciti alla nostra comunità di viaggiatori</li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+//import AccediView from './AccediView.vue';
+//import RegistraView from './RegistraView.vue';
+
 export default {
   name: 'HomeView',
   methods: {
-    goToLogin() {
-      this.$router.push('/login'); // Reindirizza alla pagina di login
+    goToAccedi() {
+      this.$router.push('/accedi'); // Reindirizza alla pagina di login
     },
-    goToRegister() {
-      this.$router.push('/register'); // Reindirizza alla pagina di registrazione
+    goToRegistra() {
+      this.$router.push('/registra'); // Reindirizza alla pagina di registrazione
     },
   },
 };
@@ -35,30 +39,42 @@ export default {
 
 <style scoped>
 .home {
-  position: relative;
+  position: absolute; /* Cambiato da relative a absolute */
+  top: 0;
+  left: 0;
   height: 100vh;
+  width: 100vw; /* Assicura che copra tutta la larghezza */
   overflow: hidden;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: center; /* Allinea verticalmente al centro */
+  justify-content: center; /* Allinea orizzontalmente al centro */
+  background-image: url('@/assets/aereoporto.png'); /* Usa il percorso corretto */
+  background-size: cover; /* Assicura che l'immagine copra l'intera area */
+  background-position: center; /* Centra l'immagine */ /* Riduce la luminosità dell'immagine */
 }
 
-.logo {
-  position: absolute;
-  top: 20px; /* Regola la posizione del logo */
-  z-index: 2;
-  width: 150px; /* Regola la larghezza del logo */
+.content {
+  display: flex; /* Usa Flexbox per allineare i contenuti */
+  justify-content: space-between; /* Spazio tra le colonne */
+  width: 80%; /* Larghezza del contenitore per le colonne */
 }
 
 .overlay {
-  position: relative;
+  flex: 1; /* Prende una porzione della larghezza */
+  margin-right: 20px; /* Margine destro per separare dall'altra colonna */
   z-index: 2;
   background-color: rgba(0, 0, 0, 0.5); /* Overlay semi-trasparente */
   color: white;
   padding: 20px;
-  text-align: center;
+  text-align: left; /* Allinea il testo a sinistra */
   border-radius: 10px;
+}
+
+.features {
+  flex: 1; /* Prende una porzione della larghezza */
+  z-index: 2;
+  color: white;
+  text-align: left; /* Allinea il testo a sinistra */
 }
 
 h1 {
@@ -84,14 +100,6 @@ button {
 
 button:hover {
   background-color: #45a049; /* Colore verde scuro al passaggio del mouse */
-}
-
-.features {
-  position: relative;
-  z-index: 2;
-  color: white;
-  text-align: center;
-  margin-top: 40px; /* Distanza dalla parte superiore */
 }
 
 .features h2 {
