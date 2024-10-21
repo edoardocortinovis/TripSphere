@@ -66,7 +66,7 @@ export default {
           localStorage.setItem('user', JSON.stringify(result.user));
 
           // Reindirizza l'utente alla dashboard o altra pagina
-          this.$router.push('/home');
+          this.$router.push('/homepage');
         } else {
           // Gestisci messaggio di errore (es. credenziali errate)
           this.errorMessage = result.message || 'Credenziali errate.';
@@ -127,13 +127,13 @@ input {
 }
 
 input:focus {
-  border-color: #4CAF50;
+  border-color: rgb(219, 143, 0);
 }
 
 .submit-button {
   width: 100%;
   padding: 0.8rem;
-  background-color: #4CAF50;
+  background-color: rgb(219, 143, 0);
   color: white;
   border: none;
   border-radius: 12px;
@@ -143,11 +143,11 @@ input:focus {
 }
 
 .submit-button:hover {
-  background-color: #45a049;
+  background-color: rgb(169, 110, 1);
 }
 
 .error-message {
-  color: #e74c3c;
+  color: red;
   margin-top: 1rem;
 }
 
@@ -162,7 +162,7 @@ input:focus {
 }
 
 .login-link a {
-  color: #4CAF50;
+  color: rgb(219, 143, 0);
   text-decoration: none;
   font-weight: 500;
 }

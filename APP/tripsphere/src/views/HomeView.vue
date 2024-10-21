@@ -1,13 +1,28 @@
 <template>
-  <div class="home">
-    <div class="content">
-      <div class="overlay">
+  <div class="homepage">
+    <header>
+      <div class="logo">
         <h1>TripSphere</h1>
-        <p>Esplora il mondo con noi!</p>
-        <div class="button-container">
-          <button @click="goToAccedi">Accedi</button>
-          <button @click="goToRegistra">Registrati</button>
+      </div>
+      <div class="account-area">
+        <div class="language-selector">
+          <select v-model="selectedLanguage" @change="changeLanguage">
+            <option value="en">English</option>
+            <option value="it">Italiano</option>
+            <option value="fr">Français</option>
+            <option value="de">Deutsch</option>
+          </select>
         </div>
+        <div class="account-icon">
+          <img src="/APP/tripsphere/src/assets/aerei.png" alt="Account" @click="goToAccount" />
+        </div>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <div class="search-container">
+        <input type="text" placeholder="Cerca destinazioni, voli, hotel..." v-model="searchQuery" />
+        <button @click="performSearch">Cerca</button>
       </div>
     </div>
   </div>
@@ -15,77 +30,113 @@
 
 <script>
 export default {
-  name: 'HomeView',
+  name: 'HomePage',
+  data() {
+    return {
+      searchQuery: '',
+      selectedLanguage: 'en',
+    };
+  },
   methods: {
-    goToAccedi() {
-      this.$router.push('/accedi'); // Reindirizza alla pagina di login
+    performSearch() {
+      console.log('Searching for:', this.searchQuery);
+      // Logica di ricerca
     },
-    goToRegistra() {
-      this.$router.push('/registra'); // Reindirizza alla pagina di registrazione
+    goToAccount() {
+      this.$router.push('/account'); // Reindirizza alla pagina dell'account
+    },
+    changeLanguage() {
+      console.log('Lingua selezionata:', this.selectedLanguage);
+      // Implementare la logica per cambiare la lingua
     },
   },
 };
 </script>
 
 <style scoped>
-.home {
-  position: absolute; /* Cambiato da relative a absolute */
-  top: 0;
-  left: 0;
+.homepage {
   height: 100vh;
-  width: 100vw; /* Assicura che copra tutta la larghezza */
-  overflow: hidden;
   display: flex;
-  align-items: center; /* Allinea verticalmente al centro */
-  justify-content: center; /* Allinea orizzontalmente al centro */
-  background-image: url('@/assets/aereoporto.png'); /* Usa il percorso corretto */
-  background-size: cover; /* Assicura che l'immagine copra l'intera area */
-  background-position: center; /* Centra l'immagine */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f4f8;
 }
 
-.content {
-  display: flex; /* Usa Flexbox per allineare i contenuti */
-  justify-content: center; /* Centra i contenuti */
-  width: 80%; /* Larghezza del contenitore per le colonne */
-}
-
-.overlay {
-  z-index: 2;
-  background-color: rgba(0, 0, 0, 0.7); /* Overlay semi-trasparente */
-  color: white;
-  padding: 40px; /* Maggiore padding per un aspetto più arioso */
-  text-align: center; /* Allinea il testo al centro */
-  border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* Ombra per il titolo */
-}
-
-.button-container {
+header {
   display: flex;
-  justify-content: center; /* Centra i bottoni */
-  margin-top: 20px; /* Spaziatura sopra i bottoni */
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 20px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  z-index: 1000;
 }
 
-button {
-  background-color: #ffffff; /* Colore verde */
-  color: black;
+.logo h1 {
+  font-size: 2em;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.account-area {
+  display: flex;
+  align-items: center;
+}
+
+.language-selector select {
   border: none;
+  background-color: transparent;
+  padding: 5px;
+  margin-right: 20px;
+  font-size: 1em;
+}
+
+.account-icon img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.main-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding-top: 100px; /* Spazio per il menu fisso */
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.search-container input {
+  padding: 10px;
+  border: none;
+  font-size: 1.2em;
+  width: 400px;
+}
+
+.search-container button {
   padding: 10px 20px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 1em;
-  margin: 0 10px; /* Margini laterali per i pulsanti */
+  margin-left: 10px;
 }
 
-button:hover {
-  background-color: #e2e2e2; /* Colore verde scuro al passaggio del mouse */
-}
-
-h1 {
-  font-size: 3em;
-  margin: 0;
-}
-
-p {
-  font-size: 1.5em;
+.search-container button:hover {
+  background-color: #45a049;
 }
 </style>

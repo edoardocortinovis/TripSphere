@@ -2,8 +2,14 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
 import RegistraView from '../views/RegistraView.vue';
 import AccediView from '../views/AccediView.vue';
+import HomePageView from '@/views/HomePageView.vue';
 
 const routes = [
+  {
+    path: '/homepage',
+    name: 'homepage',
+    component: HomePageView,
+  },
   {
     path: '/',
     name: 'home',
