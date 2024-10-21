@@ -79,51 +79,48 @@ https://yuml.me/ledocorti/253d3f96.svg
 
 
 
-# API di Autenticazione
+# Registrazione
 Endpoint: /login
 Metodo: POST
 
-**Richiesta:**
+**EndPoint:**
 
-{
-  "email": "utente@example.com",
-  "password": "password123"
-}
+app.post('/registra', (req, res) => {
+    const { nome, cognome, data, nazionalita, email, password } = req.body;
+    db.run(`INSERT INTO utenti (nome, cognome, data, nazionalita, email, password) VALUES (?, ?, ?, ?, ?, ?)`,
+        [nome, cognome, data, nazionalita, email, password],
+        function (err) {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            res.json({ message: 'Nuovo utente creato', id: this.lastID });
+        });
+});
 
-**Requisiti Password:**
 
-{
-  "min_length": 8,
-  "uppercase_required": true,
-  "lowercase_required": true,
-  "numbers_required": true,
-  "special_characters_required": false
-}
 
-**Risposta:**
-{
-  "status": "success",
-  "message": "Benvenuto, utente!"
-}
-
-# API per i Luoghi di Interesse
+# Accedi
 Endpoint: /places
 Metodo: GET
 
-**Risposta:**
-[
-  {
-  "place": "Fontana di Trevi",
-    "type": "Fontana",
-    "description": "Una delle fontane più famose al mondo, dove lanciare una moneta porta fortuna."
-  },
-  
-  {
-    "place": "Piazza di Spagna",
-    "type": "Piazza",
-    "description": "Un'iconica piazza con la famosa scalinata di Trinità dei Monti."
-  } 
-]
+**EndPoint:**
+
+app.post('/login', (req, res) => {
+    const { email, password } = req.body;
+    db.get(`SELECT * FROM utenti WHERE email = ? AND password = ?`, [email, password], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        if (row) {
+            res.json({ message: 'Login riuscito', user: row });
+        } else {
+            res.status(401).json({ message: 'Credenziali errate' });
+        }
+    });
+});
+
+-------------------------------------------------------------------------------------------------------------------
+
 
 
 
