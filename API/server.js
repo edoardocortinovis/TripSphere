@@ -14,10 +14,23 @@ let db = new sqlite3.Database('./database.db', (err) => {
 });
 
 // Configurazione CORS
-const corsOptions = {
+/*const corsOptions = {
   origin: 'http://localhost:8080', // Assicurati che questo sia l'URL del tuo frontend
   optionsSuccessStatus: 200,       // Per risolvere problemi con i browser più vecchi
-};
+};*/
+
+const corsOptions = {
+    origin: function (origin, callback) {
+      const allowedOrigins = ['http://localhost:8080', 'http://www.edocorti.it'];
+      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    optionsSuccessStatus: 200
+  };
+  
 
 app.use(cors(corsOptions)); // Applica il middleware CORS con la configurazione specificata
 app.use(express.json());    // Per poter gestire i JSON nel body delle richieste
