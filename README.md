@@ -82,7 +82,7 @@ https://yuml.me/ledocorti/253d3f96.svg
 
 
 # Registrazione
-Endpoint: /login
+Endpoint: /registra
 Metodo: POST
 
 **EndPoint:**
@@ -102,7 +102,7 @@ app.post('/registra', (req, res) => {
 
 
 # Accedi
-Endpoint: /places
+Endpoint: /login
 Metodo: GET
 
 **EndPoint:**
