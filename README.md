@@ -73,10 +73,12 @@ l'app è un applicazione che arriva in aiuto a tutti i turisti, serve per - l'or
    - Le attrazioni possono avere politiche di prezzo differenti per studenti, insegnanti o scuole.
    - Devono essere gestiti sconti e prezzi agevolati per queste categorie speciali.
 
+
+# Schema
+
 https://yuml.me/ledocorti/253d3f96.svg
 
 ------------------------------------------
-
 
 
 # Registrazione
