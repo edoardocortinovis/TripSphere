@@ -3,11 +3,14 @@
 *TtripSphere è un' applicazione per l'organizzazione di viaggi* 
 
 TARGET = Viaggiatori
+
 PROBLEMA = Organizzazione viaggi
+
 COMPETITOR = Sygic Travel Maps Trip Planner, TripCase, Visit a City, Trivago, TripAdvaisor
+
 TECNOLOGIE = html, css, javascript, express, vue, sqlite
 
-l'app è un applicazione che arriva in aiuto a tutti i turisti, serve per - l'organizzazione di viaggi - e avere un elenco dettagliato delle migliori attrazioni per quel luogo, consultando le recensioni sui vari posti nel mondo, cosi da poter scegliere il proprio viaggio al meglio.
+Tripsphere è un applicazione che arriva in aiuto a tutti i turisti, serve per - l'organizzazione di viaggi - e avere un elenco dettagliato delle migliori attrazioni per quel luogo, consultando le recensioni sui vari posti nel mondo, cosi da poter scegliere il proprio viaggio al meglio.
 
 ------------------------------------------
 
@@ -99,6 +102,16 @@ app.post('/registra', (req, res) => {
         });
 });
 
+**Risposta**
+
+{
+    "nome": "Mario",
+    "cognome": "Rossi",
+    "data": "1990-05-10",
+    "nazionalita": "Italiana",
+    "email": "mario.rossi@example.com",
+    "password": "passwordSicura123"
+}
 
 
 # Accedi
@@ -120,6 +133,16 @@ app.post('/login', (req, res) => {
         }
     });
 });
+
+**Risposta**
+
+{
+    "message": "Login riuscito",
+    "user": {
+        "name": "Mario Rossi",
+        "email": "mario@example.com"
+    }
+}
 
 -------------------------------------------------------------------------------------------------------------------
 
