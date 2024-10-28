@@ -5,7 +5,6 @@
 L'app è un applicazione che arriva in aiuto a tutti i turisti, serve per - l'organizzazione di viaggi - e avere un elenco dettagliato delle migliori attrazioni per quel luogo, consultando le recensioni sui vari posti nel mondo, cosi da poter scegliere il proprio viaggio al meglio.
 
 
-
 *target* 
 Viaggiatori
 
@@ -17,7 +16,11 @@ Organizzazione viaggi
 ------------------------------------------
 
 *Competitor* 
-Sygic Travel Maps Trip Planner, TripCase, Visit a City, Trivago, TripAdvaisor
+   - Sygic Travel Maps Trip Planner
+   - TripCase
+   - Visit a City
+   - Trivago
+   - TripAdvaisor
 
 ------------------------------------------
 
@@ -97,6 +100,8 @@ Sygic Travel Maps Trip Planner, TripCase, Visit a City, Trivago, TripAdvaisor
 # Casi d'uso 
 
 https://yuml.me/ledocorti/253d3f96.svg
+
+![casiUtilizzo](https://github.com/user-attachments/assets/a74215c2-9f86-4e2c-aff3-b9f572de2525)
 
 ------------------------------------------
 
