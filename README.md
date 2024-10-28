@@ -77,7 +77,7 @@ Tripsphere è un applicazione che arriva in aiuto a tutti i turisti, serve per -
    - Devono essere gestiti sconti e prezzi agevolati per queste categorie speciali.
 
 
-# Schema
+# Casi d'uso 
 
 https://yuml.me/ledocorti/253d3f96.svg
 
