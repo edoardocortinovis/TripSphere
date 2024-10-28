@@ -2,6 +2,10 @@
 
 **TtripSphere è un' applicazione per l'organizzazione di viaggi** 
 
+L'app è un applicazione che arriva in aiuto a tutti i turisti, serve per - l'organizzazione di viaggi - e avere un elenco dettagliato delle migliori attrazioni per quel luogo, consultando le recensioni sui vari posti nel mondo, cosi da poter scegliere il proprio viaggio al meglio.
+
+
+
 *target* 
 Viaggiatori
 
@@ -24,8 +28,6 @@ Sygic Travel Maps Trip Planner, TripCase, Visit a City, Trivago, TripAdvaisor
    - express
    - vue
    - sqlite3
-
-Tripsphere è un applicazione che arriva in aiuto a tutti i turisti, serve per - l'organizzazione di viaggi - e avere un elenco dettagliato delle migliori attrazioni per quel luogo, consultando le recensioni sui vari posti nel mondo, cosi da poter scegliere il proprio viaggio al meglio.
 
 ------------------------------------------
 
