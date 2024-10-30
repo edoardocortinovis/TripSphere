@@ -111,6 +111,7 @@ Metodo: POST
 
 **EndPoint:**
 
+```
 app.post('/registra', (req, res) => {
     const { nome, cognome, data, nazionalita, email, password } = req.body;
     db.run(`INSERT INTO utenti (nome, cognome, data, nazionalita, email, password) VALUES (?, ?, ?, ?, ?, ?)`,
@@ -122,9 +123,11 @@ app.post('/registra', (req, res) => {
             res.json({ message: 'Nuovo utente creato', id: this.lastID });
         });
 });
+```
 
 **Risposta**
 
+```
 {
     "nome": "Mario",
     "cognome": "Rossi",
@@ -133,7 +136,7 @@ app.post('/registra', (req, res) => {
     "email": "mario.rossi@example.com",
     "password": "passwordSicura123"
 }
-
+```
 
 # Accedi
 Endpoint: /login
@@ -141,6 +144,7 @@ Metodo: GET
 
 **EndPoint:**
 
+```
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
     db.get(`SELECT * FROM utenti WHERE email = ? AND password = ?`, [email, password], (err, row) => {
@@ -154,9 +158,11 @@ app.post('/login', (req, res) => {
         }
     });
 });
+```
 
 **Risposta**
 
+```
 {
     "message": "Login riuscito",
     "user": {
@@ -164,3 +170,4 @@ app.post('/login', (req, res) => {
         "email": "mario@example.com"
     }
 }
+```
