@@ -6,12 +6,14 @@ L'app è un applicazione che arriva in aiuto a tutti i turisti, serve per - l'or
 
 
 *target* 
-Viaggiatori
+- Viaggiatori
+- Turisti
+- Famiglie
 
 ------------------------------------------
 
 *Problema* 
-Organizzazione viaggi
+Come organizzare il proprio viaggio senza conoscere le attrazioni principali del luogo interessato
 
 ------------------------------------------
 
@@ -19,18 +21,14 @@ Organizzazione viaggi
    - Sygic Travel Maps Trip Planner
    - TripCase
    - Visit a City
-   - Trivago
    - TripAdvaisor
 
 ------------------------------------------
 
 *Tecnologie*
-   - html
-   - css
-   - javascript
-   - express
-   - vue
-   - sqlite3
+   - **Frontend** : Html, css, javascript, vue
+   - **Backend** : Node.js, express.js
+   - **Database** : sqlite3
 
 ------------------------------------------
 
@@ -101,7 +99,8 @@ Organizzazione viaggi
 
 https://yuml.me/ledocorti/253d3f96.svg
 
-![casiUtilizzo](https://github.com/user-attachments/assets/a74215c2-9f86-4e2c-aff3-b9f572de2525)
+![schema casi d'uso](https://github.com/user-attachments/assets/a57217f5-bb10-46ef-8447-5bc1c4b22557)
+
 
 ------------------------------------------
 
