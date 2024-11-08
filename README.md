@@ -1,13 +1,34 @@
 # TripSphere
 
-*TtripSphere è un' applicazione per l'organizzazione di viaggi* 
+**TtripSphere è un' applicazione per l'organizzazione di viaggi** 
 
-TARGET = Viaggiatori
-PROBLEMA = Organizzazione viaggi
-COMPETITOR = Sygic Travel Maps Trip Planner, TripCase, Visit a City, Trivago, TripAdvaisor
-TECNOLOGIE = html, css, javascript, express, vue, sqlite
+L'app è un applicazione che arriva in aiuto a tutti i turisti, serve per - l'organizzazione di viaggi - e avere un elenco dettagliato delle migliori attrazioni per quel luogo, consultando le recensioni sui vari posti nel mondo, cosi da poter scegliere il proprio viaggio al meglio.
 
-l'app è un applicazione che arriva in aiuto a tutti i turisti, serve per - l'organizzazione di viaggi - e avere un elenco dettagliato delle migliori attrazioni per quel luogo, consultando le recensioni sui vari posti nel mondo, cosi da poter scegliere il proprio viaggio al meglio.
+
+*target* 
+- Viaggiatori
+- Turisti
+- Famiglie
+
+------------------------------------------
+
+*Problema* 
+Come organizzare il proprio viaggio senza conoscere le attrazioni principali del luogo interessato
+
+------------------------------------------
+
+*Competitor* 
+   - Sygic Travel Maps Trip Planner
+   - TripCase
+   - Visit a City
+   - TripAdvaisor
+
+------------------------------------------
+
+*Tecnologie*
+   - **Frontend** : Html, css, javascript, vue
+   - **Backend** : Node.js, express.js
+   - **Database** : sqlite3
 
 ------------------------------------------
 
@@ -73,18 +94,24 @@ l'app è un applicazione che arriva in aiuto a tutti i turisti, serve per - l'or
    - Le attrazioni possono avere politiche di prezzo differenti per studenti, insegnanti o scuole.
    - Devono essere gestiti sconti e prezzi agevolati per queste categorie speciali.
 
+
+# Casi d'uso 
+
 https://yuml.me/ledocorti/253d3f96.svg
+
+![schema casi d'uso](https://github.com/user-attachments/assets/a57217f5-bb10-46ef-8447-5bc1c4b22557)
+
 
 ------------------------------------------
 
 
-
 # Registrazione
-Endpoint: /login
+Endpoint: /registra
 Metodo: POST
 
 **EndPoint:**
 
+```
 app.post('/registra', (req, res) => {
     const { nome, cognome, data, nazionalita, email, password } = req.body;
     db.run(`INSERT INTO utenti (nome, cognome, data, nazionalita, email, password) VALUES (?, ?, ?, ?, ?, ?)`,
@@ -96,15 +123,28 @@ app.post('/registra', (req, res) => {
             res.json({ message: 'Nuovo utente creato', id: this.lastID });
         });
 });
+```
 
+**Risposta**
 
+```
+{
+    "nome": "Mario",
+    "cognome": "Rossi",
+    "data": "1990-05-10",
+    "nazionalita": "Italiana",
+    "email": "mario.rossi@example.com",
+    "password": "passwordSicura123"
+}
+```
 
 # Accedi
-Endpoint: /places
+Endpoint: /login
 Metodo: GET
 
 **EndPoint:**
 
+```
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
     db.get(`SELECT * FROM utenti WHERE email = ? AND password = ?`, [email, password], (err, row) => {
@@ -118,49 +158,16 @@ app.post('/login', (req, res) => {
         }
     });
 });
+```
 
--------------------------------------------------------------------------------------------------------------------
+**Risposta**
 
-
-
-
-# API per il Cambio Lingua
-Endpoint: /change-language
-Metodo: POST
-
-**Richiesta:**
-
+```
 {
-  "user_id": "12345",
-  "new_language": {
-    "code": "it",
-    "name": "Italiano"
-  }
-
-}
-
-**Risposta:**
-
-{
-  "status": "success",
-  "message": "Lingua cambiata con successo.",
-  "current_language": {
-    "code": "it",
-    "name": "Italiano"
-  },
-  "available_languages": [
-  
-    {
-      "code": "en",
-      "name": "English"
-    },
-    {
-      "code": "fr",
-      "name": "Français"
-    },
-    {
-      "code": "de",
-      "name": "Deutsch"
+    "message": "Login riuscito",
+    "user": {
+        "name": "Mario Rossi",
+        "email": "mario@example.com"
     }
-  ]
 }
+```
