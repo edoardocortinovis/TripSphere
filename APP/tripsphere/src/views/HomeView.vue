@@ -14,14 +14,14 @@
           </select>
         </div>
         <div class="account-icon">
-          <img src="/APP/tripsphere/src/assets/aerei.png" alt="Account" @click="goToAccount" />
+          <!--<img :src="require('@/assets/aerei.png')" @click="goToAccount" />-->
+          <a class="account-text" @click="goToAccount">Account</a>
         </div>
       </div>
     </header>
-
     <div class="main-content">
       <div class="search-container">
-        <input type="text" placeholder="Cerca destinazioni, voli, hotel..." v-model="searchQuery" />
+        <input type="text" placeholder="Dove vuoi andare" v-model="searchQuery" />
         <button @click="performSearch">Cerca</button>
       </div>
     </div>
@@ -43,7 +43,7 @@ export default {
       // Logica di ricerca
     },
     goToAccount() {
-      this.$router.push('/account'); // Reindirizza alla pagina dell'account
+      this.$router.push('/homepage'); // Reindirizza alla pagina dell'account
     },
     changeLanguage() {
       console.log('Lingua selezionata:', this.selectedLanguage);
@@ -54,8 +54,10 @@ export default {
 </script>
 
 <style scoped>
+
+
 .homepage {
-  height: 100vh;
+  height: 89vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -87,6 +89,22 @@ header {
   align-items: center;
 }
 
+.account-text{
+  cursor: pointer;
+  margin-right: 20px;
+  margin-left: 10px;
+}
+
+/* .account-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 100%;
+  white-space: nowrap; 
+} */
+
 .language-selector select {
   border: none;
   background-color: transparent;
@@ -95,11 +113,17 @@ header {
   font-size: 1em;
 }
 
+.account-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /*width: 50px; /* Dimensiona l'area dell'icona */
+  height: 50px; /* Evita che il testo o l'immagine escano */
+}
+
 .account-icon img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  cursor: pointer;
+  max-width: 100%; /* Assicura che l'immagine si adatti */
+  height: auto;
 }
 
 .main-content {
@@ -128,7 +152,7 @@ header {
 
 .search-container button {
   padding: 10px 20px;
-  background-color: #4caf50;
+  background-color: rgb(219, 143, 0);
   color: white;
   border: none;
   border-radius: 5px;
@@ -137,6 +161,6 @@ header {
 }
 
 .search-container button:hover {
-  background-color: #45a049;
+  background-color: rgb(169, 110, 1);
 }
 </style>

@@ -6,12 +6,12 @@ import HomePageView from '@/views/HomePageView.vue';
 
 const routes = [
   {
-    path: '/',
+    path: '/home',
     name: 'home',
     component: HomeView,
   },
   {
-    path: '/homepage',
+    path: '/',
     name: 'homepage',
     component: HomePageView,
   },

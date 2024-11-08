@@ -69,7 +69,7 @@ export default {
       };
 
       try {
-        const response = await fetch('http://localhost:3000/registra', {
+        const response = await fetch('http://65.109.225.35:3000/registra', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

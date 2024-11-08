@@ -47,7 +47,7 @@ export default {
 
       try {
         // Effettua la richiesta POST all'endpoint '/accedi'
-        const response = await fetch('http://localhost:3000/accedi', {
+        const response = await fetch('http://65.109.225.35:3000/accedi', {
           method: 'POST', // Cambiato da GET a POST
           headers: {
             'Content-Type': 'application/json',

@@ -21,7 +21,7 @@ let db = new sqlite3.Database('./database.db', (err) => {
 
 const corsOptions = {
     origin: function (origin, callback) {
-      const allowedOrigins = ['http://localhost:8080', 'http://www.edocorti.it'];
+      const allowedOrigins = ['http://65.109.225.35:8080', 'http://www.edocorti.it'];
       if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
         callback(null, true);
       } else {
@@ -88,5 +88,5 @@ process.on('SIGINT', () => {
 
 // Avvio del server
 app.listen(port, () => {
-    console.log(`Server API in esecuzione su http://localhost:${port}`);
+    console.log(`Server API in esecuzione su http://65.109.225.35:${port}`);
 });
