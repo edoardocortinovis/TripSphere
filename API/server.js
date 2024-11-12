@@ -35,6 +35,13 @@ const corsOptions = {
 app.use(cors(corsOptions)); // Applica il middleware CORS con la configurazione specificata
 app.use(express.json());    // Per poter gestire i JSON nel body delle richieste
 
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+
 // Creazione della tabella utenti
 db.run(`CREATE TABLE IF NOT EXISTS utenti (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,6 +52,31 @@ db.run(`CREATE TABLE IF NOT EXISTS utenti (
     email TEXT UNIQUE,
     password TEXT
 )`);
+
+app.get('/utenti', (req, res) => {
+    db.all(`SELECT * FROM utenti`, [], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json({ utenti: rows });
+    });
+});
+
+app.get('/utenti/filtrati', (req, res) => {
+    const { nazionalita } = req.query;
+
+    if (!nazionalita) {
+        return res.status(400).json({ error: 'Nazionalità non specificata' });
+    }
+
+    db.all(`SELECT * FROM utenti WHERE nazionalita = ?`, [nazionalita], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json({ utenti: rows });
+    });
+});
+
 
 // Endpoint per registrare un nuovo utente
 app.post('/registra', (req, res) => {
@@ -73,7 +105,6 @@ app.post('/accedi', (req, res) => {
         }
     });
 });
-
 
 // Chiusura del database in modo sicuro
 process.on('SIGINT', () => {

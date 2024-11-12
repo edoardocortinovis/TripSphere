@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista Utenti</title>
+</head>
+<body>
+    <input type="submit" value="Tutti gli utenti" onClick="caricaUtenti('/utenti')">
+    <input type="submit" value="Utenti Italiani" onClick="caricaUtenti('/utenti/filtrati?nazionalita=Italiana')">
+
+    <div id="out"></div>
+
+    <script>
+        function caricaUtenti(endpoint) {
+            document.getElementById("out").innerHTML = '<p id="spin">Caricamento...</p>';
+            const xhttp = new XMLHttpRequest();
+            xhttp.onload = function () {
+                let res = JSON.parse(this.responseText);
+                let output = document.getElementById("out");
+                output.innerHTML = ''; // Svuota l'output
+                res.utenti.forEach(element => {
+                    let p = document.createElement("p");
+                    p.textContent = element.nome + ' ' + element.cognome + ' (' + element.nazionalita + ')';
+                    output.appendChild(p);
+                });
+                document.getElementById("spin").innerHTML = "";
+            };
+            xhttp.open("GET", endpoint, true);
+            xhttp.send();
+        }
+    </script>
+</body>
+</html>
