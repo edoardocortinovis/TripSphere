@@ -4,12 +4,45 @@ const cors = require('cors');
 
 // Configura Express per servire file statici dalla cartella 'public'
 
-
+const swaggerJsDoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 
 const app = express();
 const port = 3000;
 
 app.use(express.static('public'));
+
+
+const swaggerOptions = {
+    swaggerDefinition: {
+      openapi: '3.0.0',
+      info: {
+        title: 'API TripSphere',
+        version: '1.0.0',
+        description: 'Documentazione API per TripSphere',
+      },
+      servers: [
+        {
+          url: 'http://localhost:3001', // Cambia con il tuo dominio se necessario
+        },
+      ],
+    },
+    apis: ['./routes/*.js'], // Cambia con il percorso ai tuoi file di route
+  };
+  
+  const swaggerDocs = swaggerJsDoc(swaggerOptions);
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+  
+  // Le tue route
+  app.get('/', (req, res) => {
+    res.send('Benvenuto nell\'API di TripSphere');
+  });
+  
+  // Avvio del server
+  const porta = process.env.PORT || 3001;
+  app.listen(porta, () => console.log(`Server avviato sulla porta ${porta}`));
+
+
 
 // Configurazione del database SQLite
 let db = new sqlite3.Database('./database.db', (err) => {
@@ -18,6 +51,9 @@ let db = new sqlite3.Database('./database.db', (err) => {
     }
     console.log('Connesso al database');
 });
+
+
+
 
 const corsOptions = {
     origin: function (origin, callback) {
@@ -46,6 +82,7 @@ db.run(`CREATE TABLE IF NOT EXISTS utenti (
     email TEXT UNIQUE,
     password TEXT
 )`);
+
 
 // Endpoint per registrare un nuovo utente
 app.post('/registra', (req, res) => {
@@ -112,3 +149,6 @@ process.on('SIGINT', () => {
 app.listen(port, () => {
     console.log(`Server API in esecuzione su http://localhost:${port}`);
 });
+
+
+
