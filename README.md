@@ -21,7 +21,7 @@ Come organizzare il proprio viaggio senza conoscere le attrazioni principali del
    - Sygic Travel Maps Trip Planner
    - TripCase
    - Visit a City
-   - TripAdvaisor
+   - TripAdvisor
 
 ------------------------------------------
 
@@ -40,11 +40,9 @@ Come organizzare il proprio viaggio senza conoscere le attrazioni principali del
 
 2. **Poter ricercare tramite barra di ricerca per trovare città e relative attrazioni**
    - Funzionalità per cercare città specifiche.
-   - Ricerca delle attrazioni associate alle città.
 
 3. **Mostrare le attrazioni organizzate per ogni città**
-   - Visualizzazione delle attrazioni suddivise per città selezionata.
-   - Categorizzazione delle attrazioni per una facile navigazione.
+   - Ricerca delle attrazioni associate alle città
 
 4. **Account utenti per lasciare recensioni sulle attrazioni**
    - Gli utenti devono poter creare un account personale.
@@ -52,7 +50,6 @@ Come organizzare il proprio viaggio senza conoscere le attrazioni principali del
 
 5. **Supporto multi-lingua**
    - Funzionalità per cambiare la lingua dell'interfaccia.
-   - Supporto per diverse lingue come Italiano, Inglese, Francese, ecc.
 
 6. **Salvare attrazioni nei Preferiti**
    - Gli utenti possono salvare attrazioni nelle liste dei preferiti.
@@ -60,7 +57,6 @@ Come organizzare il proprio viaggio senza conoscere le attrazioni principali del
 
 7. **Sistema di valutazione per le attrazioni**
    - Gli utenti possono valutare le attrazioni (es. da 1 a 5 stelle).
-   - Sistema di recensioni scritto e di valutazioni con stelle.
 
 ---
 
@@ -82,25 +78,21 @@ Come organizzare il proprio viaggio senza conoscere le attrazioni principali del
 
 ## Requisiti di Dominio
 
-1. **Città e relative attrazioni**
-   - Le città e le attrazioni sono entità chiave dell'applicazione.
-   - Ogni città deve avere una lista di attrazioni associate.
+1. **Città come Destinazioni Turistiche**
+L'applicazione supporta i viaggiatori nella pianificazione dei loro itinerari, fornendo informazioni dettagliate sulle città come destinazioni turistiche. Ogni città rappresenta un punto di interesse che può includere diverse attrazioni turistiche.
 
-2. **Categorie di attrazioni**
-   - Le attrazioni devono essere organizzate in categorie (es. musei, parchi, ristoranti).
-   - Le categorie aiutano gli utenti a filtrare e cercare più facilmente.
+2. **Attrazioni Organizzate in Categorie di Interesse**
+Le attrazioni disponibili nelle città devono rispecchiare diverse categorie di interesse (come cultura, natura, gastronomia), permettendo ai viaggiatori di scoprire e selezionare facilmente attività e luoghi in base alle loro preferenze e ai loro obiettivi di viaggio.
 
 3. **Prezzo e sconti per studenti, insegnanti e scuole**
    - Le attrazioni possono avere politiche di prezzo differenti per studenti, insegnanti o scuole.
-   - Devono essere gestiti sconti e prezzi agevolati per queste categorie speciali.
 
 
 # Casi d'uso 
 
 https://yuml.me/ledocorti/253d3f96.svg
 
-![schema casi d'uso](https://github.com/user-attachments/assets/a57217f5-bb10-46ef-8447-5bc1c4b22557)
-
+![image](https://github.com/user-attachments/assets/288ee88d-3269-4038-98e6-f626dbb92db1)
 
 ------------------------------------------
 
@@ -108,24 +100,6 @@ https://yuml.me/ledocorti/253d3f96.svg
 # Registrazione
 Endpoint: /registra
 Metodo: POST
-
-**EndPoint:**
-
-```
-app.post('/registra', (req, res) => {
-    const { nome, cognome, data, nazionalita, email, password } = req.body;
-    db.run(`INSERT INTO utenti (nome, cognome, data, nazionalita, email, password) VALUES (?, ?, ?, ?, ?, ?)`,
-        [nome, cognome, data, nazionalita, email, password],
-        function (err) {
-            if (err) {
-                return res.status(500).json({ error: err.message });
-            }
-            res.json({ message: 'Nuovo utente creato', id: this.lastID });
-        });
-});
-```
-
-**Risposta**
 
 ```
 {
@@ -142,24 +116,6 @@ app.post('/registra', (req, res) => {
 Endpoint: /login
 Metodo: GET
 
-**EndPoint:**
-
-```
-app.post('/login', (req, res) => {
-    const { email, password } = req.body;
-    db.get(`SELECT * FROM utenti WHERE email = ? AND password = ?`, [email, password], (err, row) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        if (row) {
-            res.json({ message: 'Login riuscito', user: row });
-        } else {
-            res.status(401).json({ message: 'Credenziali errate' });
-        }
-    });
-});
-```
-
 **Risposta**
 
 ```
@@ -171,3 +127,24 @@ app.post('/login', (req, res) => {
     }
 }
 ```
+
+
+monte ore settimantale = 12
+
+![image](https://github.com/user-attachments/assets/103789b4-cc9b-4d55-ab15-64848c9525b6)
+
+![image](https://github.com/user-attachments/assets/7d491ae0-9c28-4835-8676-2ea8c6e8f2cb)
+
+*Riepilogo Sprint:*
+- Sprint 1: Totale 12 Story Points
+   - Registrazione dell'utente: 5
+   - Accesso tramite email e password: 5   
+   - Visualizzazione della Pagina Home: 2
+- Sprint 2: Totale 12 Story Points
+   - Ricerca di Destinazioni e Servizi: 1
+   - Sistema di valutazione per le attrazioni: 8
+   - Internazionalizzazione (i18n): 3
+- Sprint 3: Totale 12 Story Points
+   - Dettagli delle Attrazioni: 5
+   - Aggiunta di Recensioni: 5
+   - Salvataggio delle Destinazioni Preferite: 2
