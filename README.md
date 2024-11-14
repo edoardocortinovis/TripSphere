@@ -92,8 +92,7 @@ Le attrazioni disponibili nelle città devono rispecchiare diverse categorie di 
 
 https://yuml.me/ledocorti/253d3f96.svg
 
-![schema casi d'uso](https://github.com/user-attachments/assets/a57217f5-bb10-46ef-8447-5bc1c4b22557)
-
+![image](https://github.com/user-attachments/assets/288ee88d-3269-4038-98e6-f626dbb92db1)
 
 ------------------------------------------
 
