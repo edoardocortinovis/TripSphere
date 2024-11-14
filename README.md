@@ -129,5 +129,5 @@ Metodo: GET
 }
 ```
 
-![image](https://github.com/user-attachments/assets/2e30cbef-e752-40d0-8431-04baa0dde798)
+![image](https://github.com/user-attachments/assets/0dbbcec6-27eb-4f61-b7d8-3d7dfb18fbf2)
 
