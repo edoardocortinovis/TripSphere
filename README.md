@@ -102,24 +102,6 @@ https://yuml.me/ledocorti/253d3f96.svg
 Endpoint: /registra
 Metodo: POST
 
-**EndPoint:**
-
-```
-app.post('/registra', (req, res) => {
-    const { nome, cognome, data, nazionalita, email, password } = req.body;
-    db.run(`INSERT INTO utenti (nome, cognome, data, nazionalita, email, password) VALUES (?, ?, ?, ?, ?, ?)`,
-        [nome, cognome, data, nazionalita, email, password],
-        function (err) {
-            if (err) {
-                return res.status(500).json({ error: err.message });
-            }
-            res.json({ message: 'Nuovo utente creato', id: this.lastID });
-        });
-});
-```
-
-**Risposta**
-
 ```
 {
     "nome": "Mario",
@@ -134,24 +116,6 @@ app.post('/registra', (req, res) => {
 # Accedi
 Endpoint: /login
 Metodo: GET
-
-**EndPoint:**
-
-```
-app.post('/login', (req, res) => {
-    const { email, password } = req.body;
-    db.get(`SELECT * FROM utenti WHERE email = ? AND password = ?`, [email, password], (err, row) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        if (row) {
-            res.json({ message: 'Login riuscito', user: row });
-        } else {
-            res.status(401).json({ message: 'Credenziali errate' });
-        }
-    });
-});
-```
 
 **Risposta**
 
