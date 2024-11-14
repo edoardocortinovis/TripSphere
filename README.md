@@ -128,3 +128,5 @@ Metodo: GET
     }
 }
 ```
+
+![image](https://github.com/user-attachments/assets/595890c6-4539-433a-9798-aa01577fb791)
