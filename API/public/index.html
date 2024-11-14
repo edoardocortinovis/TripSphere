@@ -7,24 +7,40 @@
 </head>
 <body>
     <input type="submit" value="Tutti gli utenti" onClick="caricaUtenti('/utenti')">
-    <input type="submit" value="Utenti Italiani" onClick="caricaUtenti('/utenti/filtrati?nazionalita=Italiana')">
+    <input type="submit" value="Utenti Italiani" onClick="caricaUtenti('/utenti/filtrati')">
 
     <div id="out"></div>
 
     <script>
         function caricaUtenti(endpoint) {
-            document.getElementById("out").innerHTML = '<p id="spin">Caricamento...</p>';
+            document.getElementById("out").innerHTML = '<p id="spin">Caricamento...</p>';  // Mostra il messaggio di caricamento
             const xhttp = new XMLHttpRequest();
             xhttp.onload = function () {
-                let res = JSON.parse(this.responseText);
+                let res;
+                try {
+                    res = JSON.parse(this.responseText);  // Parse della risposta
+                } catch (error) {
+                    document.getElementById("out").innerHTML = '<p>Errore nel caricamento dei dati.</p>';
+                    return;
+                }
+                
                 let output = document.getElementById("out");
-                output.innerHTML = ''; // Svuota l'output
-                res.utenti.forEach(element => {
-                    let p = document.createElement("p");
-                    p.textContent = element.nome + ' ' + element.cognome + ' (' + element.nazionalita + ')';
-                    output.appendChild(p);
-                });
-                document.getElementById("spin").innerHTML = "";
+                output.innerHTML = '';  // Svuota l'output prima di aggiungere nuovi dati
+
+                if (res.utenti && res.utenti.length > 0) {
+                    res.utenti.forEach(element => {
+                        let p = document.createElement("p");
+                        p.textContent = element.nome + ' ' + element.cognome + ' (' + element.nazionalita + ')';
+                        output.appendChild(p);
+                    });
+                } else {
+                    output.innerHTML = '<p>Nessun utente trovato.</p>';  // Mostra messaggio se non ci sono utenti
+                }
+                
+                document.getElementById("spin").innerHTML = '';  // Rimuove il messaggio di caricamento
+            };
+            xhttp.onerror = function () {
+                document.getElementById("out").innerHTML = '<p>Errore di rete. Riprova più tardi.</p>';
             };
             xhttp.open("GET", endpoint, true);
             xhttp.send();

@@ -2,8 +2,14 @@ const express = require('express');
 const sqlite3 = require('sqlite3');
 const cors = require('cors');
 
+// Configura Express per servire file statici dalla cartella 'public'
+
+
+
 const app = express();
 const port = 3000;
+
+app.use(express.static('public'));
 
 // Configurazione del database SQLite
 let db = new sqlite3.Database('./database.db', (err) => {
@@ -13,15 +19,9 @@ let db = new sqlite3.Database('./database.db', (err) => {
     console.log('Connesso al database');
 });
 
-// Configurazione CORS
-/*const corsOptions = {
-  origin: 'http://localhost:8080', // Assicurati che questo sia l'URL del tuo frontend
-  optionsSuccessStatus: 200,       // Per risolvere problemi con i browser più vecchi
-};*/
-
 const corsOptions = {
     origin: function (origin, callback) {
-      const allowedOrigins = ['http://65.109.225.35:8080', 'http://www.edocorti.it'];
+      const allowedOrigins = ['http://localhost:8080', 'http://www.edocorti.it'];
       if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
         callback(null, true);
       } else {
@@ -35,12 +35,6 @@ const corsOptions = {
 app.use(cors(corsOptions)); // Applica il middleware CORS con la configurazione specificata
 app.use(express.json());    // Per poter gestire i JSON nel body delle richieste
 
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
 
 // Creazione della tabella utenti
 db.run(`CREATE TABLE IF NOT EXISTS utenti (
@@ -52,31 +46,6 @@ db.run(`CREATE TABLE IF NOT EXISTS utenti (
     email TEXT UNIQUE,
     password TEXT
 )`);
-
-app.get('/utenti', (req, res) => {
-    db.all(`SELECT * FROM utenti`, [], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json({ utenti: rows });
-    });
-});
-
-app.get('/utenti/filtrati', (req, res) => {
-    const { nazionalita } = req.query;
-
-    if (!nazionalita) {
-        return res.status(400).json({ error: 'Nazionalità non specificata' });
-    }
-
-    db.all(`SELECT * FROM utenti WHERE nazionalita = ?`, [nazionalita], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json({ utenti: rows });
-    });
-});
-
 
 // Endpoint per registrare un nuovo utente
 app.post('/registra', (req, res) => {
@@ -106,6 +75,28 @@ app.post('/accedi', (req, res) => {
     });
 });
 
+app.get('/utenti', (req, res) => {
+    db.all(`SELECT * FROM utenti`, [], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json({ utenti: rows });
+    });
+});
+
+app.get('/utenti/filtrati', (req, res) => {
+    const nazionalita = "italiana";
+
+    db.all(`SELECT * FROM utenti WHERE nazionalita = ?`, [nazionalita], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json({ utenti: rows });
+    });
+});
+
+
+
 // Chiusura del database in modo sicuro
 process.on('SIGINT', () => {
     db.close((err) => {
@@ -119,5 +110,5 @@ process.on('SIGINT', () => {
 
 // Avvio del server
 app.listen(port, () => {
-    console.log(`Server API in esecuzione su http://65.109.225.35:${port}`);
+    console.log(`Server API in esecuzione su http://localhost:${port}`);
 });
