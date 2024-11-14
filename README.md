@@ -129,5 +129,21 @@ Metodo: GET
 }
 ```
 
-![image](https://github.com/user-attachments/assets/ce67f09d-9204-4d80-bdf8-5eef5c79affe)
 
+monte ore settimantale = 12
+
+![image](https://github.com/user-attachments/assets/7d491ae0-9c28-4835-8676-2ea8c6e8f2cb)
+
+Riepilogo Sprint:
+Sprint 1: Totale 12 Story Points
+Registrazione dell'utente: 5
+Accesso tramite email e password: 5
+Visualizzazione della Pagina Home: 2
+Sprint 2: Totale 12 Story Points
+Ricerca di Destinazioni e Servizi: 1
+Sistema di valutazione per le attrazioni: 8
+Internazionalizzazione (i18n): 3
+Sprint 3: Totale 12 Story Points
+Dettagli delle Attrazioni: 5
+Aggiunta di Recensioni: 5
+Salvataggio delle Destinazioni Preferite: 2
