@@ -132,6 +132,8 @@ Metodo: GET
 
 monte ore settimantale = 12
 
+![image](https://github.com/user-attachments/assets/103789b4-cc9b-4d55-ab15-64848c9525b6)
+
 ![image](https://github.com/user-attachments/assets/7d491ae0-9c28-4835-8676-2ea8c6e8f2cb)
 
 *Riepilogo Sprint:*
