@@ -42,8 +42,6 @@ const swaggerOptions = {
   const porta = process.env.PORT || 3001;
   app.listen(porta, () => console.log(`Server avviato sulla porta ${porta}`));
 
-
-
 // Configurazione del database SQLite
 let db = new sqlite3.Database('./database.db', (err) => {
     if (err) {
@@ -51,9 +49,6 @@ let db = new sqlite3.Database('./database.db', (err) => {
     }
     console.log('Connesso al database');
 });
-
-
-
 
 const corsOptions = {
     origin: function (origin, callback) {
