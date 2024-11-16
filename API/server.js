@@ -1,71 +1,57 @@
 const express = require('express');
 const sqlite3 = require('sqlite3');
 const cors = require('cors');
-
-// Configura Express per servire file statici dalla cartella 'public'
-
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 
 const app = express();
-const port = 3000;
+const port = 3001; // Porta su cui il server sarà in esecuzione
 
 app.use(express.static('public'));
 
-
+// Configurazione Swagger
 const swaggerOptions = {
-    swaggerDefinition: {
-      openapi: '3.0.0',
-      info: {
-        title: 'API TripSphere',
-        version: '1.0.0',
-        description: 'Documentazione API per TripSphere',
-      },
-      servers: [
-        {
-          url: 'http://localhost:3001', // Cambia con il tuo dominio se necessario
-        },
-      ],
+  swaggerDefinition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'API TripSphere',
+      version: '1.0.0',
+      description: 'Documentazione API per TripSphere',
     },
-    apis: ['./routes/*.js'], // Cambia con il percorso ai tuoi file di route
-  };
-  
-  const swaggerDocs = swaggerJsDoc(swaggerOptions);
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-  
-  // Le tue route
-  app.get('/', (req, res) => {
-    res.send('Benvenuto nell\'API di TripSphere');
-  });
-  
-  // Avvio del server
-  const porta = process.env.PORT || 3001;
-  app.listen(porta, () => console.log(`Server avviato sulla porta ${porta}`));
+    servers: [
+      {
+        url: `http://localhost:${port}`, // URL del server
+      },
+    ],
+  },
+  apis: ['./server.js'], // Percorso del file con le annotazioni Swagger
+};
+
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = ['http://localhost:8080', 'http://www.edocorti.it'];
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions)); // Applica il middleware CORS con la configurazione specificata
+app.use(express.json()); // Per poter gestire i JSON nel body delle richieste
 
 // Configurazione del database SQLite
 let db = new sqlite3.Database('./database.db', (err) => {
-    if (err) {
-        return console.error(err.message);
-    }
-    console.log('Connesso al database');
+  if (err) {
+    return console.error(err.message);
+  }
+  console.log('Connesso al database');
 });
-
-const corsOptions = {
-    origin: function (origin, callback) {
-      const allowedOrigins = ['http://localhost:8080', 'http://www.edocorti.it'];
-      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    optionsSuccessStatus: 200
-  };
-  
-
-app.use(cors(corsOptions)); // Applica il middleware CORS con la configurazione specificata
-app.use(express.json());    // Per poter gestire i JSON nel body delle richieste
-
 
 // Creazione della tabella utenti
 db.run(`CREATE TABLE IF NOT EXISTS utenti (
@@ -78,72 +64,100 @@ db.run(`CREATE TABLE IF NOT EXISTS utenti (
     password TEXT
 )`);
 
-
-// Endpoint per registrare un nuovo utente
+/**
+ * @swagger
+ * /registra:
+ *   post:
+ *     summary: Registra un nuovo utente
+ *     description: Endpoint per registrare un nuovo utente nel sistema.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nome:
+ *                 type: string
+ *               cognome:
+ *                 type: string
+ *               data:
+ *                 type: string
+ *               nazionalita:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Utente registrato con successo.
+ *       500:
+ *         description: Errore durante la registrazione.
+ */
 app.post('/registra', (req, res) => {
-    const { nome, cognome, data, nazionalita, email, password } = req.body;
-    db.run(`INSERT INTO utenti (nome, cognome, data, nazionalita, email, password) VALUES (?, ?, ?, ?, ?, ?)`,
-        [nome, cognome, data, nazionalita, email, password],
-        function (err) {
-            if (err) {
-                return res.status(500).json({ error: err.message });
-            }
-            res.json({ message: 'Nuovo utente creato', id: this.lastID });
-        });
+  const { nome, cognome, data, nazionalita, email, password } = req.body;
+  db.run(
+    `INSERT INTO utenti (nome, cognome, data, nazionalita, email, password) VALUES (?, ?, ?, ?, ?, ?)`,
+    [nome, cognome, data, nazionalita, email, password],
+    function (err) {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.json({ message: 'Nuovo utente creato', id: this.lastID });
+    }
+  );
 });
 
-// Endpoint per effettuare il accesso
+/**
+ * @swagger
+ * /accedi:
+ *   post:
+ *     summary: Effettua il login
+ *     description: Endpoint per autenticare un utente tramite email e password.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login riuscito.
+ *       401:
+ *         description: Credenziali errate.
+ */
 app.post('/accedi', (req, res) => {
-    const { email, password } = req.body;
-    db.get(`SELECT * FROM utenti WHERE email = ? AND password = ?`, [email, password], (err, row) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        if (row) {
-            res.json({ message: 'Login riuscito', user: row });
-        } else {
-            res.status(401).json({ message: 'Credenziali errate' });
-        }
-    });
+  const { email, password } = req.body;
+  db.get(`SELECT * FROM utenti WHERE email = ? AND password = ?`, [email, password], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    if (row) {
+      res.json({ message: 'Login riuscito', user: row });
+    } else {
+      res.status(401).json({ message: 'Credenziali errate' });
+    }
+  });
 });
-
-app.get('/utenti', (req, res) => {
-    db.all(`SELECT * FROM utenti`, [], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json({ utenti: rows });
-    });
-});
-
-app.get('/utenti/filtrati', (req, res) => {
-    const nazionalita = "italiana";
-
-    db.all(`SELECT * FROM utenti WHERE nazionalita = ?`, [nazionalita], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json({ utenti: rows });
-    });
-});
-
-
 
 // Chiusura del database in modo sicuro
 process.on('SIGINT', () => {
-    db.close((err) => {
-        if (err) {
-            console.error(err.message);
-        }
-        console.log('Chiusura database');
-        process.exit(0);
-    });
+  db.close((err) => {
+    if (err) {
+      console.error(err.message);
+    }
+    console.log('Chiusura database');
+    process.exit(0);
+  });
 });
 
 // Avvio del server
 app.listen(port, () => {
-    console.log(`Server API in esecuzione su http://localhost:${port}`);
+  console.log(`Server API in esecuzione su http://localhost:${port}`);
 });
-
-
-
