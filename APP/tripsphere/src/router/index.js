@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue';
 import RegistraView from '../views/RegistraView.vue';
 import AccediView from '../views/AccediView.vue';
 import HomePageView from '@/views/HomePageView.vue';
+import AccountView from '@/views/AccountView.vue';
 
 const routes = [
   {
@@ -24,6 +25,11 @@ const routes = [
     path: '/accedi',
     name: 'accedi',
     component: AccediView,
+  },
+  {
+    path: '/account',
+    name: 'account',
+    component: AccountView,
   },
 ];
 

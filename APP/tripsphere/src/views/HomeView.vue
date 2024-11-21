@@ -43,7 +43,7 @@ export default {
       // Logica di ricerca
     },
     goToAccount() {
-      this.$router.push('/homepage'); // Reindirizza alla pagina dell'account
+      this.$router.push('/account'); // Reindirizza alla pagina dell'account
     },
     changeLanguage() {
       console.log('Lingua selezionata:', this.selectedLanguage);

@@ -7,6 +7,8 @@
         <div class="button-container">
           <button @click="goToAccedi"><b>Accedi</b></button>
           <button @click="goToRegistra"><b>Registrati</b></button>
+          <button @click="goToApp"><b>Continua senza account</b></button>
+
         </div>
       </div>
     </div>
@@ -22,6 +24,9 @@ export default {
     },
     goToRegistra() {
       this.$router.push('/registra'); // Reindirizza alla pagina di registrazione
+    },
+    goToApp() {
+      this.$router.push('/home'); // Reindirizza alla pagina di registrazione
     },
   },
 };
