@@ -63,10 +63,10 @@ export default {
           this.errorMessage = ''; // Pulisci eventuali messaggi di errore
 
           // Puoi anche salvare i dati dell'utente nel localStorage o in una variabile di stato
-          localStorage.setItem('user', JSON.stringify(result.user));
+          //localStorage.setItem('user', JSON.stringify(result.user));
 
           // Reindirizza l'utente alla dashboard o altra pagina
-          this.$router.push('/homepage');
+          this.$router.push('/home');
         } else {
           // Gestisci messaggio di errore (es. credenziali errate)
           this.errorMessage = result.message || 'Credenziali errate.';

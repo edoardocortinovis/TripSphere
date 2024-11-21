@@ -5,7 +5,7 @@ const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 
 const app = express();
-const port = 3001; // Porta su cui il server sarà in esecuzione
+const port = 3000; // Porta su cui il server sarà in esecuzione
 
 app.use(express.static('public'));
 
@@ -134,6 +134,15 @@ app.post('/registra', (req, res) => {
  */
 app.post('/accedi', (req, res) => {
   const { email, password } = req.body;
+
+  // Controllo per login admin
+  if (email === 'admin' && password === 'admin') {
+    return res.json({
+      message: 'Accesso Admin riuscito',
+      redirectUrl: '/admin-dashboard', // URL per la dashboard admin
+    });
+  }
+
   db.get(`SELECT * FROM utenti WHERE email = ? AND password = ?`, [email, password], (err, row) => {
     if (err) {
       return res.status(500).json({ error: err.message });
