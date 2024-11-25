@@ -34,7 +34,6 @@ export default {
   },
   methods: {
     async loginUser() {
-      // Verifica che email e password non siano vuoti
       if (!this.email || !this.password) {
         this.errorMessage = 'Inserisci email e password.';
         return;
@@ -46,9 +45,8 @@ export default {
       };
 
       try {
-        // Effettua la richiesta POST all'endpoint '/accedi'
         const response = await fetch('http://localhost:3000/accedi', {
-          method: 'POST', // Cambiato da GET a POST
+          method: 'POST', 
           headers: {
             'Content-Type': 'application/json',
           },
@@ -58,31 +56,30 @@ export default {
         const result = await response.json();
 
         if (response.ok) {
-          // Se il login ha successo
+          // Memorizza il token ricevuto nel localStorage
+          localStorage.setItem('authToken', result.token);
+
           this.successMessage = 'Accesso effettuato con successo!';
-          this.errorMessage = ''; // Pulisci eventuali messaggi di errore
+          this.errorMessage = '';
 
-          // Puoi anche salvare i dati dell'utente nel localStorage o in una variabile di stato
-          //localStorage.setItem('user', JSON.stringify(result.user));
-
-          // Reindirizza l'utente alla dashboard o altra pagina
-          this.$router.push('/home');
+          // Controlla se è un admin e fai il redirect
+          if (this.email === 'admin@admin' && this.password === 'admin') {
+            this.$router.push('/admin');  // Redirect alla pagina admin
+          } else {
+            this.$router.push('/home');  // Redirect alla home per utente normale
+          }
         } else {
-          // Gestisci messaggio di errore (es. credenziali errate)
           this.errorMessage = result.message || 'Credenziali errate.';
-          this.successMessage = ''; // Pulisci eventuali messaggi di successo
+          this.successMessage = '';
         }
       } catch (error) {
-        // Gestisci errore di connessione al server
         this.errorMessage = 'Errore di connessione al server. Riprova più tardi.';
-        this.successMessage = ''; // Pulisci eventuali messaggi di successo
+        this.successMessage = '';
       }
     }
-
   },
 };
 </script>
-
 
 <style scoped>
 .login-container {

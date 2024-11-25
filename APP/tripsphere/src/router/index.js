@@ -4,6 +4,7 @@ import RegistraView from '../views/RegistraView.vue';
 import AccediView from '../views/AccediView.vue';
 import HomePageView from '@/views/HomePageView.vue';
 import AccountView from '@/views/AccountView.vue';
+import AdminView from '@/views/AdminView.vue';
 
 const routes = [
   {
@@ -31,6 +32,11 @@ const routes = [
     name: 'account',
     component: AccountView,
   },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: AdminView,
+  }
 ];
 
 const router = createRouter({

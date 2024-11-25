@@ -1,6 +1,7 @@
 const express = require('express');
 const sqlite3 = require('sqlite3');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');  // Importa jsonwebtoken per i token
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 
@@ -99,6 +100,7 @@ app.post('/registra', (req, res) => {
   const { nome, cognome, data, nazionalita, email, password } = req.body;
   db.run(
     `INSERT INTO utenti (nome, cognome, data, nazionalita, email, password) VALUES (?, ?, ?, ?, ?, ?)`,
+
     [nome, cognome, data, nazionalita, email, password],
     function (err) {
       if (err) {
@@ -135,20 +137,15 @@ app.post('/registra', (req, res) => {
 app.post('/accedi', (req, res) => {
   const { email, password } = req.body;
 
-  // Controllo per login admin
-  if (email === 'admin' && password === 'admin') {
-    return res.json({
-      message: 'Accesso Admin riuscito',
-      redirectUrl: '/admin-dashboard', // URL per la dashboard admin
-    });
-  }
-
   db.get(`SELECT * FROM utenti WHERE email = ? AND password = ?`, [email, password], (err, row) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
     if (row) {
-      res.json({ message: 'Login riuscito', user: row });
+      // Creazione del token con una scadenza di 1 ora
+      const token = jwt.sign({ id: row.id, email: row.email }, 'secretKey', { expiresIn: '1h' });
+
+      res.json({ message: 'Login riuscito', token: token });
     } else {
       res.status(401).json({ message: 'Credenziali errate' });
     }
