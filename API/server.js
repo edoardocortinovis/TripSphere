@@ -143,7 +143,7 @@ app.post('/accedi', (req, res) => {
     }
     if (row) {
       // Creazione del token con una scadenza di 1 ora
-      const token = jwt.sign({ id: row.id, email: row.email }, 'secretKey', { expiresIn: '1h' });
+      const token = jwt.sign({ id: row.id, email: row.email }, 'secretKey');
 
       res.json({ message: 'Login riuscito', token: token });
     } else {
