@@ -10,6 +10,7 @@ const port = 3000; // Porta su cui il server sarà in esecuzione
 
 app.use(express.static('public'));
 
+
 // Configurazione Swagger
 const swaggerOptions = {
   swaggerDefinition: {
@@ -40,6 +41,7 @@ const corsOptions = {
       callback(new Error('Not allowed by CORS'));
     }
   },
+  credentials : true,
   optionsSuccessStatus: 200,
 };
 
@@ -64,6 +66,22 @@ db.run(`CREATE TABLE IF NOT EXISTS utenti (
     email TEXT UNIQUE,
     password TEXT
 )`);
+
+// Middleware per verificare il token JWT
+const verifyToken = (req, res, next) => {
+  const token = req.cookies.token; // Ottieni il token dal cookie
+  if (!token) {
+    return res.status(403).json({ message: 'Token non trovato, devi effettuare il login' });
+  }
+
+  jwt.verify(token, 'secretKey', (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: 'Token non valido o scaduto' });
+    }
+    req.user = decoded; // Memorizza i dati dell'utente nel request object
+    next(); // Vai alla rotta successiva
+  });
+};
 
 /**
  * @swagger
@@ -100,7 +118,6 @@ app.post('/registra', (req, res) => {
   const { nome, cognome, data, nazionalita, email, password } = req.body;
   db.run(
     `INSERT INTO utenti (nome, cognome, data, nazionalita, email, password) VALUES (?, ?, ?, ?, ?, ?)`,
-
     [nome, cognome, data, nazionalita, email, password],
     function (err) {
       if (err) {
@@ -143,7 +160,14 @@ app.post('/accedi', (req, res) => {
     }
     if (row) {
       // Creazione del token con una scadenza di 1 ora
-      const token = jwt.sign({ id: row.id, email: row.email }, 'secretKey');
+      const token = jwt.sign({ id: row.id, email: row.email }, 'secretKey', { expiresIn: '1h' });
+
+      // Imposta il token nel cookie
+      res.cookie('token', token, {
+        httpOnly: true,  // Impedisce l'accesso al cookie tramite JavaScript
+        secure: false,   // Usa 'true' se hai HTTPS
+        maxAge: 3600000  // Imposta la durata del cookie a 1 ora
+      });
 
       res.json({ message: 'Login riuscito', token: token });
     } else {

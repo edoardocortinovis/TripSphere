@@ -13,11 +13,9 @@
       </div>
 
       <button type="submit" class="submit-button">Accedi</button>
-
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
     </form>
-
     <p class="login-link">Non hai un account? <router-link to="/registra">Registrati qui</router-link></p>
   </div>
 </template>
@@ -34,52 +32,39 @@ export default {
   },
   methods: {
     async loginUser() {
-      if (!this.email || !this.password) {
-        this.errorMessage = 'Inserisci email e password.';
-        return;
-      }
-
-      const loginData = {
-        email: this.email,
-        password: this.password,
-      };
+      const loginData = { email: this.email, password: this.password };
 
       try {
         const response = await fetch('http://localhost:3000/accedi', {
-          method: 'POST', 
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(loginData),
         });
-
         const result = await response.json();
 
         if (response.ok) {
-          // Memorizza il token ricevuto nel localStorage
           localStorage.setItem('authToken', result.token);
 
+          const payload = JSON.parse(atob(result.token.split('.')[1]));
           this.successMessage = 'Accesso effettuato con successo!';
           this.errorMessage = '';
 
-          // Controlla se è un admin e fai il redirect
-          if (this.email === 'admin@admin' && this.password === 'admin') {
-            this.$router.push('/admin');  // Redirect alla pagina admin
+          if (payload.role === 'admin') {
+            this.$router.push('/admin');
           } else {
-            this.$router.push('/home');  // Redirect alla home per utente normale
+            this.$router.push('/home');
           }
         } else {
           this.errorMessage = result.message || 'Credenziali errate.';
-          this.successMessage = '';
         }
-      } catch (error) {
-        this.errorMessage = 'Errore di connessione al server. Riprova più tardi.';
-        this.successMessage = '';
+      } catch {
+        this.errorMessage = 'Errore di connessione al server.';
       }
-    }
+    },
   },
 };
 </script>
+
 
 <style scoped>
 .login-container {
@@ -168,3 +153,5 @@ input:focus {
   text-decoration: underline;
 }
 </style>
+
+fai si che l'accesso dei dati funzioni grazie al database non al localstorage 
