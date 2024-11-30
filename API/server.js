@@ -159,22 +159,28 @@ app.post('/accedi', (req, res) => {
       return res.status(500).json({ error: err.message });
     }
     if (row) {
-      // Creazione del token con una scadenza di 1 ora
+      // Crea il token JWT
       const token = jwt.sign({ id: row.id, email: row.email }, 'secretKey', { expiresIn: '1h' });
 
-      // Imposta il token nel cookie
-      res.cookie('token', token, {
-        httpOnly: true,  // Impedisce l'accesso al cookie tramite JavaScript
-        secure: false,   // Usa 'true' se hai HTTPS
-        maxAge: 3600000  // Imposta la durata del cookie a 1 ora
+      // Imposta il cookie con il token
+      res.cookie('auth_token', token, {
+        httpOnly: true,     // Non accessibile tramite JavaScript
+        secure: false,      // Usa 'true' in HTTPS (produzione)
+        maxAge: 3600000,    // 1 ora
       });
 
-      res.json({ message: 'Login riuscito', token: token });
+      res.json({ message: 'Login riuscito', token });
     } else {
       res.status(401).json({ message: 'Credenziali errate' });
     }
   });
 });
+
+app.post('/logout', (req, res) => {
+  res.clearCookie('auth_token'); // Rimuove il cookie
+  res.json({ message: 'Logout effettuato con successo.' });
+});
+
 
 // Chiusura del database in modo sicuro
 process.on('SIGINT', () => {
