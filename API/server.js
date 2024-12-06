@@ -1,15 +1,24 @@
 const express = require('express');
 const sqlite3 = require('sqlite3');
 const cors = require('cors');
-const jwt = require('jsonwebtoken');  // Importa jsonwebtoken per i token
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const session = require('express-session');
 
 const app = express();
 const port = 3000; // Porta su cui il server sarà in esecuzione
 
-app.use(express.static('public'));
+// Configurazione express-session
+app.use(
+  session({
+    secret: 'TripsphereEdoCorti', // Segreto per la sessione
+    resave: false,      // Non salva la sessione se non modificata
+    saveUninitialized: true, // Salva nuove sessioni anche se vuote
+    cookie: { maxAge: 3600000 }, // Durata della sessione (1 ora)
+  })
+);
 
+app.use(express.static('public'));
 
 // Configurazione Swagger
 const swaggerOptions = {
@@ -41,12 +50,12 @@ const corsOptions = {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials : true,
+  credentials: true,
   optionsSuccessStatus: 200,
 };
 
-app.use(cors(corsOptions)); // Applica il middleware CORS con la configurazione specificata
-app.use(express.json()); // Per poter gestire i JSON nel body delle richieste
+app.use(cors(corsOptions));
+app.use(express.json()); 
 
 // Configurazione del database SQLite
 let db = new sqlite3.Database('./database.db', (err) => {
@@ -66,22 +75,6 @@ db.run(`CREATE TABLE IF NOT EXISTS utenti (
     email TEXT UNIQUE,
     password TEXT
 )`);
-
-// Middleware per verificare il token JWT
-const verifyToken = (req, res, next) => {
-  const token = req.cookies.token; // Ottieni il token dal cookie
-  if (!token) {
-    return res.status(403).json({ message: 'Token non trovato, devi effettuare il login' });
-  }
-
-  jwt.verify(token, 'secretKey', (err, decoded) => {
-    if (err) {
-      return res.status(403).json({ message: 'Token non valido o scaduto' });
-    }
-    req.user = decoded; // Memorizza i dati dell'utente nel request object
-    next(); // Vai alla rotta successiva
-  });
-};
 
 /**
  * @swagger
@@ -159,17 +152,12 @@ app.post('/accedi', (req, res) => {
       return res.status(500).json({ error: err.message });
     }
     if (row) {
-      // Crea il token JWT
-      const token = jwt.sign({ id: row.id, email: row.email }, 'secretKey', { expiresIn: '1h' });
+      // Salva le informazioni nella sessione
+      req.session.loggedin = true;
+      req.session.userId = row.id;
+      req.session.userName = row.nome;
 
-      // Imposta il cookie con il token
-      res.cookie('auth_token', token, {
-        httpOnly: true,     // Non accessibile tramite JavaScript
-        secure: false,      // Usa 'true' in HTTPS (produzione)
-        maxAge: 3600000,    // 1 ora
-      });
-
-      res.json({ message: 'Login riuscito', token });
+      res.json({ message: 'Login riuscito' });
     } else {
       res.status(401).json({ message: 'Credenziali errate' });
     }
@@ -177,9 +165,27 @@ app.post('/accedi', (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('auth_token'); // Rimuove il cookie
-  res.json({ message: 'Logout effettuato con successo.' });
+  if (req.session) {
+    req.session.loggedin = false; // Aggiorna lo stato di login
+    req.session.save((err) => { // Salva la sessione prima di distruggerla
+      if (err) {
+        return res.status(500).json({ message: 'Errore durante il salvataggio della sessione' });
+      }
+      req.session.destroy((err) => {
+        if (err) {
+          return res.status(500).json({ message: 'Errore durante il logout' });
+        }
+        res.clearCookie('connect.sid'); // Rimuove il cookie di sessione
+        res.json({ message: 'Logout effettuato con successo.' });
+      });
+    });
+  } else {
+    res.status(400).json({ message: 'Nessuna sessione attiva.' });
+  }
 });
+
+
+
 
 
 // Chiusura del database in modo sicuro

@@ -1,5 +1,5 @@
 <template>
-  <div class="login-container">
+  <div class="login-container" v-if="!isLoggedIn">
     <h2>Registrati</h2>
     <form @submit.prevent="registerUser">
       <div class="form-group">
@@ -40,8 +40,11 @@
 
     <p class="login-link">Hai già un account? <router-link to="/accedi">Accedi qui</router-link></p>
   </div>
+  <div v-else>
+    <!-- Se l'utente è già loggato, puoi mostrare un messaggio di benvenuto o reindirizzare automaticamente -->
+    <p>Sei già registrato, verrai reindirizzato alla home...</p>
+  </div>
 </template>
-
 
 <script>
 export default {
@@ -55,6 +58,7 @@ export default {
       password: '',
       errorMessage: '',
       successMessage: '',
+      isLoggedIn: false, // Variabile per controllare se l'utente è loggato
     };
   },
   methods: {
@@ -96,6 +100,13 @@ export default {
         //this.successMessage = ''; // Pulisci eventuali messaggi di successo
       }
     },
+  },
+  mounted() {
+    // Verifica se l'utente è già loggato
+    if (localStorage.getItem('loggedIn') === 'true') {
+      this.isLoggedIn = true;
+      this.$router.push('/home'); // Se è loggato, reindirizza alla home
+    }
   },
 };
 </script>
@@ -187,4 +198,3 @@ input:focus {
   text-decoration: underline;
 }
 </style>
-

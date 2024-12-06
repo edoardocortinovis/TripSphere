@@ -1,5 +1,5 @@
 <template>
-  <div class="login-container">
+  <div class="login-container" v-if="!isLoggedIn">
     <h2>Accedi</h2>
     <form @submit.prevent="loginUser">
       <div class="form-group">
@@ -18,6 +18,10 @@
     </form>
     <p class="login-link">Non hai un account? <router-link to="/registra">Registrati qui</router-link></p>
   </div>
+  <div v-else>
+    <!-- Se l'utente è già loggato, puoi mostrare un messaggio di benvenuto o reindirizzare automaticamente -->
+    <p>Sei già loggato, verrai reindirizzato alla home...</p>
+  </div>
 </template>
 
 <script>
@@ -28,6 +32,7 @@ export default {
       password: '',
       errorMessage: '',
       successMessage: '',
+      isLoggedIn: false, // Variabile per controllare se l'utente è loggato
     };
   },
   methods: {
@@ -43,17 +48,11 @@ export default {
         const result = await response.json();
 
         if (response.ok) {
-          localStorage.setItem('authToken', result.token);
-
-          const payload = JSON.parse(atob(result.token.split('.')[1]));
           this.successMessage = 'Accesso effettuato con successo!';
           this.errorMessage = '';
-
-          if (payload.role === 'admin') {
-            this.$router.push('/admin');
-          } else {
-            this.$router.push('/home');
-          }
+          this.isLoggedIn = true; // Imposta l'utente come loggato
+          localStorage.setItem('loggedIn', 'true'); // Salva lo stato nel localStorage
+          this.$router.push('/home'); // Reindirizza alla home
         } else {
           this.errorMessage = result.message || 'Credenziali errate.';
         }
@@ -62,9 +61,15 @@ export default {
       }
     },
   },
+  mounted() {
+    // Verifica se l'utente è già loggato
+    if (localStorage.getItem('loggedIn') === 'true') {
+      this.isLoggedIn = true;
+      this.$router.push('/home'); // Se è loggato, reindirizza alla home
+    }
+  },
 };
 </script>
-
 
 <style scoped>
 .login-container {
@@ -153,5 +158,3 @@ input:focus {
   text-decoration: underline;
 }
 </style>
-
-fai si che l'accesso dei dati funzioni grazie al database non al localstorage 

@@ -45,6 +45,7 @@
           <button @click="Logout">Esci</button>
         </ul>
       </div>
+
     </div>
   </div>
 </template>
@@ -72,21 +73,23 @@ export default {
     updateProfile() {
       console.log("Profilo aggiornato:", this.user);
     },
-    Logout() {
-      fetch('http://localhost:3000/logout', {
-        method: 'POST',
-        credentials: 'include',
+  Logout() {
+    fetch('http://localhost:3000/logout', {
+      method: 'POST',
+      credentials: 'include', // Necessario per includere i cookie
+    })
+      .then((response) => {
+        if (response.ok) {
+          console.log('Logout effettuato');
+          this.$router.push('/accedi'); // Reindirizza alla pagina di login
+        } else {
+          console.error('Errore durante il logout');
+        }
       })
-        .then((response) => {
-          if (response.ok) {
-            console.log('Logout effettuato');
-            this.$router.push('/accedi'); // Reindirizza alla pagina di login
-          } else {
-            console.error('Errore durante il logout');
-          }
-        })
-        .catch((error) => console.error('Errore di rete:', error));
-    },
+      .catch((error) => console.error('Errore di rete:', error));
+  },
+
+
   },
 };
 </script>
