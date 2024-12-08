@@ -184,6 +184,13 @@ app.post('/logout', (req, res) => {
   }
 });
 
+app.get('/home', (req, res) => {
+  if (req.session.loggedin) {
+    res.json({ message: `Benvenuto, ${req.session.userName}` });
+  } else {
+    res.status(401).json({ message: 'Utente non autenticato' });
+  }
+});
 
 
 

@@ -30,7 +30,7 @@
 
 <script>
 export default {
-  name: 'HomePage',
+  name: 'HomeView',
   data() {
     return {
       searchQuery: '',
@@ -40,22 +40,18 @@ export default {
   methods: {
     performSearch() {
       console.log('Searching for:', this.searchQuery);
-      // Logica di ricerca
     },
     goToAccount() {
-      this.$router.push('/account'); // Reindirizza alla pagina dell'account
+      this.$router.push('/account'); 
     },
     changeLanguage() {
       console.log('Lingua selezionata:', this.selectedLanguage);
-      // Implementare la logica per cambiare la lingua
     },
   },
 };
 </script>
 
 <style scoped>
-
-
 .homepage {
   height: 89vh;
   display: flex;

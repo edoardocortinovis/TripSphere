@@ -50,8 +50,8 @@ export default {
         if (response.ok) {
           this.successMessage = 'Accesso effettuato con successo!';
           this.errorMessage = '';
-          this.isLoggedIn = true; // Imposta l'utente come loggato
-          localStorage.setItem('loggedIn', 'true'); // Salva lo stato nel localStorage
+          this.isLoggedIn = true; 
+          localStorage.setItem('loggedIn', 'true'); 
           this.$router.push('/home'); // Reindirizza alla home
         } else {
           this.errorMessage = result.message || 'Credenziali errate.';

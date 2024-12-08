@@ -17,7 +17,7 @@
 
 <script>
 export default {
-  name: 'HomeView',
+  name: 'HomePageView',
   methods: {
     goToAccedi() {
       this.$router.push('/accedi'); // Reindirizza alla pagina di login

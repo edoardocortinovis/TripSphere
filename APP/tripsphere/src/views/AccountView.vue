@@ -1,4 +1,5 @@
 <template>
+
   <div class="profile-container">
     <div class="sidebar">
       <ul>
@@ -17,7 +18,7 @@
     </div>
 
     <div class="main-content">
-      <!-- Sezione Dati -->
+      
       <div v-if="selectedSection === 'dati'" class="section">
         <h3>Informazioni Account</h3>
         <form @submit.prevent="updateProfile">
@@ -31,7 +32,6 @@
         </form>
       </div>
 
-      <!-- Sezione Preferiti -->
       <div v-if="selectedSection === 'preferiti'" class="section">
         <h3>I miei Preferiti</h3>
         <ul>
@@ -80,7 +80,9 @@ export default {
     })
       .then((response) => {
         if (response.ok) {
-          console.log('Logout effettuato');
+          this.user.loggedIn = false; 
+          localStorage.removeItem('loggedIn');
+          console.log('Stato aggiornato:', this.user.loggedIn);
           this.$router.push('/accedi'); // Reindirizza alla pagina di login
         } else {
           console.error('Errore durante il logout');
