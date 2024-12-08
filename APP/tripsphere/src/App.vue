@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <nav>
-        <router-link to="/homepage">Home</router-link> <!-- Collegamento alla home -->
+        <router-link to="/home">Tripsphere</router-link> <!-- Collegamento alla home -->
         <!--<router-link to="/registra">Registra</router-link>  Collegamento alla home -->
     </nav>
     <router-view />
