@@ -1,24 +1,45 @@
 const express = require('express');
 const sqlite3 = require('sqlite3');
 const cors = require('cors');
+const session = require('express-session');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
-const session = require('express-session');
 
 const app = express();
-const port = 3000; // Porta su cui il server sarà in esecuzione
+const port = 3000;
 
 // Configurazione express-session
 app.use(
   session({
-    secret: 'TripsphereEdoCorti', // Segreto per la sessione
-    resave: false,      // Non salva la sessione se non modificata
-    saveUninitialized: true, // Salva nuove sessioni anche se vuote
-    cookie: { maxAge: 3600000 }, // Durata della sessione (1 ora)
+    secret: 'TripsphereEdoCorti',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { maxAge: 3600000 }, // 1 ora
   })
 );
 
-app.use(express.static('public'));
+// Middleware
+app.use(cors({ origin: ['http://localhost:8080'], credentials: true }));
+app.use(express.json());
+
+// Configurazione del database SQLite
+const db = new sqlite3.Database('./database.db', (err) => {
+  if (err) return console.error('Errore connessione DB:', err.message);
+  console.log('Connesso al database SQLite');
+});
+
+// Creazione della tabella utenti se non esiste
+db.run(`
+  CREATE TABLE IF NOT EXISTS utenti (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT,
+    cognome TEXT,
+    data TEXT,
+    nazionalita TEXT,
+    email TEXT UNIQUE,
+    password TEXT
+  )
+`);
 
 // Configurazione Swagger
 const swaggerOptions = {
@@ -29,52 +50,13 @@ const swaggerOptions = {
       version: '1.0.0',
       description: 'Documentazione API per TripSphere',
     },
-    servers: [
-      {
-        url: `http://localhost:${port}`, // URL del server
-      },
-    ],
+    servers: [{ url: `http://localhost:${port}` }],
   },
-  apis: ['./server.js'], // Percorso del file con le annotazioni Swagger
+  apis: ['./server.js'], // Percorso del file con annotazioni Swagger
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-
-const corsOptions = {
-  origin: function (origin, callback) {
-    const allowedOrigins = ['http://localhost:8080', 'http://www.edocorti.it'];
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  optionsSuccessStatus: 200,
-};
-
-app.use(cors(corsOptions));
-app.use(express.json()); 
-
-// Configurazione del database SQLite
-let db = new sqlite3.Database('./database.db', (err) => {
-  if (err) {
-    return console.error(err.message);
-  }
-  console.log('Connesso al database');
-});
-
-// Creazione della tabella utenti
-db.run(`CREATE TABLE IF NOT EXISTS utenti (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome TEXT,
-    cognome TEXT,
-    data TEXT,
-    nazionalita TEXT,
-    email TEXT UNIQUE,
-    password TEXT
-)`);
 
 /**
  * @swagger
@@ -113,10 +95,8 @@ app.post('/registra', (req, res) => {
     `INSERT INTO utenti (nome, cognome, data, nazionalita, email, password) VALUES (?, ?, ?, ?, ?, ?)`,
     [nome, cognome, data, nazionalita, email, password],
     function (err) {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      res.json({ message: 'Nuovo utente creato', id: this.lastID });
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ message: 'Utente registrato con successo', id: this.lastID });
     }
   );
 });
@@ -147,66 +127,93 @@ app.post('/registra', (req, res) => {
 app.post('/accedi', (req, res) => {
   const { email, password } = req.body;
 
+  if (email === 'admin@admin.it' && password === 'admin') {
+    req.session.loggedin = true;
+    req.session.isAdmin = true;
+    return res.json({
+      success: true,
+      isAdmin: true,
+      email: 'admin@admin.it',
+      password: 'admin'
+    });
+  }
+
   db.get(`SELECT * FROM utenti WHERE email = ? AND password = ?`, [email, password], (err, row) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
+    if (err) return res.status(500).json({ error: err.message });
     if (row) {
-      // Salva le informazioni nella sessione
       req.session.loggedin = true;
       req.session.userId = row.id;
-      req.session.userName = row.nome;
-
-      res.json({ message: 'Login riuscito' });
+      req.session.isAdmin = false;
+      return res.json({
+        success: true,
+        isAdmin: false,
+        email: row.email,
+        password: row.password
+      });
     } else {
       res.status(401).json({ message: 'Credenziali errate' });
     }
   });
 });
 
+
+/**
+ * @swagger
+ * /logout:
+ *   post:
+ *     summary: Effettua il logout
+ *     description: Disconnette l'utente corrente dalla sessione.
+ *     responses:
+ *       200:
+ *         description: Logout effettuato con successo.
+ *       400:
+ *         description: Nessuna sessione attiva.
+ */
 app.post('/logout', (req, res) => {
   if (req.session) {
-    req.session.loggedin = false; // Aggiorna lo stato di login
-    req.session.save((err) => { // Salva la sessione prima di distruggerla
-      if (err) {
-        return res.status(500).json({ message: 'Errore durante il salvataggio della sessione' });
-      }
-      req.session.destroy((err) => {
-        if (err) {
-          return res.status(500).json({ message: 'Errore durante il logout' });
-        }
-        res.clearCookie('connect.sid'); // Rimuove il cookie di sessione
-        res.json({ message: 'Logout effettuato con successo.' });
-      });
+    req.session.destroy((err) => {
+      if (err) return res.status(500).json({ message: 'Errore durante il logout' });
+      res.clearCookie('connect.sid');
+      res.json({ message: 'Logout effettuato con successo.' });
     });
   } else {
     res.status(400).json({ message: 'Nessuna sessione attiva.' });
   }
 });
 
-app.get('/home', (req, res) => {
+app.get('/account', (req, res) => {
   if (req.session.loggedin) {
-    res.json({ message: `Benvenuto, ${req.session.userName}` });
+    const userId = req.session.userId; // L'id dell'utente che è loggato
+    // Recupera i dati dell'utente dal database
+    db.get(`SELECT * FROM utenti WHERE id = ?`, [userId], (err, row) => {
+      if (err) return res.status(500).json({ error: err.message });
+
+      if (row) {
+        res.json({
+          name: row.name,
+          email: row.email,
+          favorites: row.favorites, // Preferiti (ipotizzando che siano memorizzati)
+        });
+      } else {
+        res.status(404).json({ message: 'Utente non trovato' });
+      }
+    });
   } else {
-    res.status(401).json({ message: 'Utente non autenticato' });
+    res.status(401).json({ message: 'Non autenticato' });
   }
 });
 
 
-
-
-// Chiusura del database in modo sicuro
-process.on('SIGINT', () => {
-  db.close((err) => {
-    if (err) {
-      console.error(err.message);
-    }
-    console.log('Chiusura database');
-    process.exit(0);
-  });
-});
-
 // Avvio del server
 app.listen(port, () => {
   console.log(`Server API in esecuzione su http://localhost:${port}`);
+});
+
+// Chiusura sicura del database
+process.on('SIGINT', () => {
+  db.close((err) => {
+    if (err) console.error('Errore durante la chiusura del database:', err.message);
+    console.log('Database chiuso');
+    process.exit(0);
+  });
 });

@@ -19,10 +19,24 @@
         </div>
       </div>
     </header>
+
     <div class="main-content">
       <div class="search-container">
         <input type="text" placeholder="Dove vuoi andare" v-model="searchQuery" />
         <button @click="performSearch">Cerca</button>
+      </div>
+    </div>
+
+    <!-- Nuova sezione per le card -->
+    <div class="cards-section">
+      <h2>Scopri le destinazioni</h2>
+      <div class="cards-container">
+        <div class="card" v-for="card in cards" :key="card.id">
+          <img :src="card.image" alt="Destination" />
+          <h3>{{ card.title }}</h3>
+          <p>{{ card.description }}</p>
+          <button @click="viewDetails(card.id)">Vedi Dettagli</button>
+        </div>
       </div>
     </div>
   </div>
@@ -30,11 +44,17 @@
 
 <script>
 export default {
-  name: 'HomeView',
+  name: 'HomePage',
   data() {
     return {
       searchQuery: '',
       selectedLanguage: 'en',
+      // Lista di card come esempio (potresti cambiarla con un'API)
+      cards: [
+        { id: 1, title: 'Parigi', description: 'La città della luce.', image: '@/assets/paris.jpg' },
+        { id: 2, title: 'Roma', description: 'La città eterna.', image: '@/assets/rome.jpg' },
+        { id: 3, title: 'Londra', description: 'La capitale inglese.', image: '@/assets/london.jpg' },
+      ],
     };
   },
   methods: {
@@ -42,10 +62,13 @@ export default {
       console.log('Searching for:', this.searchQuery);
     },
     goToAccount() {
-      this.$router.push('/account'); 
+      this.$router.push('/account');
     },
     changeLanguage() {
       console.log('Lingua selezionata:', this.selectedLanguage);
+    },
+    viewDetails(id) {
+      console.log('Viewing details for card ID:', id);
     },
   },
 };
@@ -53,12 +76,13 @@ export default {
 
 <style scoped>
 .homepage {
-  height: 89vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  background-color: #f0f4f8;
+  justify-content: flex-start;
+  background: url('@/assets/aerei.png') no-repeat center center;
+  background-size: cover;
 }
 
 header {
@@ -85,25 +109,25 @@ header {
   align-items: center;
 }
 
-.account-text{
+.account-text {
   cursor: pointer;
   margin-right: 20px;
   margin-left: 10px;
 }
 
-/* .account-icon {
+.account-icon {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 80px;
   height: 80px;
   border-radius: 100%;
-  white-space: nowrap; 
-} */
+  white-space: nowrap;
+}
 
 .language-selector select {
   border: none;
-  background-color: transparent;
+  background-color: white;
   padding: 5px;
   margin-right: 20px;
   font-size: 1em;
@@ -113,13 +137,7 @@ header {
   display: flex;
   align-items: center;
   justify-content: center;
-  /*width: 50px; /* Dimensiona l'area dell'icona */
-  height: 50px; /* Evita che il testo o l'immagine escano */
-}
-
-.account-icon img {
-  max-width: 100%; /* Assicura che l'immagine si adatti */
-  height: auto;
+  height: 50px;
 }
 
 .main-content {
@@ -127,7 +145,7 @@ header {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  padding-top: 100px; /* Spazio per il menu fisso */
+  padding-top: 100px;
 }
 
 .search-container {
@@ -158,5 +176,88 @@ header {
 
 .search-container button:hover {
   background-color: rgb(169, 110, 1);
+}
+
+h2{
+  color: white;
+}
+
+/* Sezione card */
+.cards-section {
+  width: 80%;
+  margin-top: 100px; /* Separato dalla search bar */
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.cards-section h2 {
+  font-size: 2em;
+  margin-bottom: 20px;
+}
+
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 card per riga */
+  gap: 20px;
+}
+
+.card {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.card img {
+  width: 100%;
+  border-radius: 8px;
+  height: 200px;
+  object-fit: cover;
+}
+
+.card h3 {
+  font-size: 1.5em;
+  margin-top: 10px;
+}
+
+.card p {
+  font-size: 1em;
+  color: #555;
+  margin-top: 10px;
+}
+
+.card button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: rgb(219, 143, 0);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.card button:hover {
+  background-color: rgb(169, 110, 1);
+}
+
+@media (max-width: 768px) {
+  .cards-section {
+    width: 95%;
+  }
+
+  .card img {
+    height: 180px;
+  }
+
+  .cards-container {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .card img {
+    height: 160px;
+  }
 }
 </style>

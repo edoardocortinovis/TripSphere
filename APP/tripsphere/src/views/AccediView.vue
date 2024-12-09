@@ -18,9 +18,9 @@
     </form>
     <p class="login-link">Non hai un account? <router-link to="/registra">Registrati qui</router-link></p>
   </div>
+
   <div v-else>
-    <!-- Se l'utente è già loggato, puoi mostrare un messaggio di benvenuto o reindirizzare automaticamente -->
-    <p>Sei già loggato, verrai reindirizzato alla home...</p>
+    <p>Sei già loggato, verrai reindirizzato...</p>
   </div>
 </template>
 
@@ -32,44 +32,67 @@ export default {
       password: '',
       errorMessage: '',
       successMessage: '',
-      isLoggedIn: false, // Variabile per controllare se l'utente è loggato
+      isLoggedIn: false, // Variabile per controllare lo stato di login
     };
   },
   methods: {
     async loginUser() {
-      const loginData = { email: this.email, password: this.password };
+  try {
+    const response = await fetch('http://localhost:3000/accedi', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: this.email, password: this.password }),
+    });
+    const result = await response.json();
 
-      try {
-        const response = await fetch('http://localhost:3000/accedi', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(loginData),
-        });
-        const result = await response.json();
+    if (response.ok) {
+      this.successMessage = 'Login effettuato con successo!';
+      this.errorMessage = '';
+      this.isLoggedIn = true;
 
-        if (response.ok) {
-          this.successMessage = 'Accesso effettuato con successo!';
-          this.errorMessage = '';
-          this.isLoggedIn = true; 
-          localStorage.setItem('loggedIn', 'true'); 
-          this.$router.push('/home'); // Reindirizza alla home
-        } else {
-          this.errorMessage = result.message || 'Credenziali errate.';
-        }
-      } catch {
-        this.errorMessage = 'Errore di connessione al server.';
+      // Salva lo stato in localStorage
+      localStorage.setItem('loggedIn', 'true');
+      localStorage.setItem('isAdmin', result.isAdmin ? 'true' : 'false'); // Verifica se è admin
+
+      // Salva anche l'email
+      localStorage.setItem('email', this.email);
+      localStorage.setItem('password', this.password);
+
+      // Redirige in base al ruolo
+      if (result.isAdmin) {
+        this.$router.push('/admin');
+      } else {
+        this.$router.push('/home');
       }
-    },
+    } else {
+      this.errorMessage = result.message || 'Credenziali errate.';
+      this.successMessage = '';
+    }
+  } catch {
+    this.errorMessage = 'Errore di connessione al server.';
+    this.successMessage = '';
+  }
+}
+
   },
   mounted() {
-    // Verifica se l'utente è già loggato
-    if (localStorage.getItem('loggedIn') === 'true') {
+    // Controlla lo stato di login
+    const loggedIn = localStorage.getItem('loggedIn') === 'true';
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
+
+    if (loggedIn) {
       this.isLoggedIn = true;
-      this.$router.push('/home'); // Se è loggato, reindirizza alla home
+      // Redirige alla pagina corretta
+      if (isAdmin) {
+        this.$router.push('/admin');
+      } else {
+        this.$router.push('/home');
+      }
     }
   },
 };
 </script>
+
 
 <style scoped>
 .login-container {

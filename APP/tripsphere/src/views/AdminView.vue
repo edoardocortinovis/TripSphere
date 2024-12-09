@@ -70,6 +70,7 @@
     const credentials = {
       email: this.email,
       password: this.password,
+      
     };
 
     // Utilizza 'fetch' per inviare la richiesta al backend

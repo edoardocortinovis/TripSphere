@@ -1,5 +1,4 @@
 <template>
-
   <div class="profile-container">
     <div class="sidebar">
       <ul>
@@ -7,18 +6,15 @@
           <a href="#" @click="setSelectedSection('dati')" :class="{ active: selectedSection === 'dati' }">Dati</a>
         </li>
         <li>
-          <a href="#" @click="setSelectedSection('preferiti')"
-            :class="{ active: selectedSection === 'preferiti' }">Preferiti</a>
+          <a href="#" @click="setSelectedSection('preferiti')" :class="{ active: selectedSection === 'preferiti' }">Preferiti</a>
         </li>
         <li>
           <a href="#" @click="setSelectedSection('Esci')" :class="{ active: selectedSection === 'Esci' }">Esci</a>
         </li>
       </ul>
-
     </div>
 
     <div class="main-content">
-      
       <div v-if="selectedSection === 'dati'" class="section">
         <h3>Informazioni Account</h3>
         <form @submit.prevent="updateProfile">
@@ -40,12 +36,11 @@
       </div>
 
       <div v-if="selectedSection === 'Esci'" class="section">
-        <h3>Sicuro di Voler Uscire</h3>
+        <h3>Sicuro di voler uscire?</h3>
         <ul>
           <button @click="Logout">Esci</button>
         </ul>
       </div>
-
     </div>
   </div>
 </template>
@@ -56,14 +51,10 @@ export default {
     return {
       selectedSection: 'dati',  // Sezione selezionata inizialmente
       user: {
-        name: 'Mario Rossi',
-        email: 'mario.rossi@example.com',
+        name: '',
+        email: '',
       },
-      favorites: [
-        { id: 1, name: 'Roma' },
-        { id: 2, name: 'Milano' },
-        { id: 3, name: 'Parigi' },
-      ],
+      favorites: [], // Preferiti dell'utente
     };
   },
   methods: {
@@ -72,32 +63,64 @@ export default {
     },
     updateProfile() {
       console.log("Profilo aggiornato:", this.user);
+      // Invia una richiesta per aggiornare i dati dell'utente nel backend
+      fetch('http://localhost:3000/account', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: this.user.name,
+          email: this.user.email,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("Profilo aggiornato con successo:", data);
+        })
+        .catch((error) => console.error('Errore nell\'aggiornamento del profilo:', error));
     },
-  Logout() {
-    fetch('http://localhost:3000/logout', {
-      method: 'POST',
+    Logout() {
+      fetch('http://localhost:3000/logout', {
+        method: 'POST',
+        credentials: 'include', // Necessario per includere i cookie
+      })
+        .then((response) => {
+          if (response.ok) {
+            this.$router.push('/accedi'); // Reindirizza alla pagina di login
+          } else {
+            console.error('Errore durante il logout');
+          }
+        })
+        .catch((error) => console.error('Errore di rete:', error));
+    },
+  },
+  mounted() {
+    // Recupera i dati dell'utente autenticato dal backend
+    fetch('http://localhost:3000/account', {
+      method: 'GET',
       credentials: 'include', // Necessario per includere i cookie
     })
-      .then((response) => {
-        if (response.ok) {
-          this.user.loggedIn = false; 
-          localStorage.removeItem('loggedIn');
-          console.log('Stato aggiornato:', this.user.loggedIn);
-          this.$router.push('/accedi'); // Reindirizza alla pagina di login
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.name && data.email) {
+          this.user.name = data.name;
+          this.user.email = data.email;
+          // Se l'utente ha preferiti, aggiorna la lista
+          if (data.favorites) {
+            this.favorites = data.favorites;
+          }
         } else {
-          console.error('Errore durante il logout');
+          console.error('Dati utente non trovati');
         }
       })
-      .catch((error) => console.error('Errore di rete:', error));
-  },
-
-
+      .catch((error) => console.error('Errore nel recupero dei dati utente:', error));
   },
 };
 </script>
 
-
 <style scoped>
+/* Stile di login */
 .profile-container {
   display: flex;
   height: 100vh;

@@ -8,30 +8,26 @@ import AdminView from '@/views/AdminView.vue';
 
 // Funzione per verificare lo stato di autenticazione
 const isAuthenticated = async () => {
-  // Controllo immediato dal localStorage
-  if (localStorage.getItem('loggedIn') === 'true') {
-    return true;
-  }
+  const userEmail = localStorage.getItem('email');
+  const userPassword = localStorage.getItem('password');
+  const loggedIn = localStorage.getItem('loggedIn') === 'true';
 
-  // Verifica lato server
-  try {
-    const response = await fetch('http://localhost:3000/home', {
-      method: 'GET',
-      credentials: 'include',
-    });
+  console.log('Recupero email:', userEmail);
+  console.log('Recupero password:', userPassword);
 
-    if (response.ok) {
-      const data = await response.json();
-      return data.loggedIn; // Restituisce true/false dal server
+  if (loggedIn) {
+    if (userEmail === 'admin@admin.it' && userPassword === 'admin') {
+      return { loggedIn: true, isAdmin: true }; // Admin trovato
     } else {
-      return false;
+      return { loggedIn: true, isAdmin: false }; // Utente normale
     }
-  } catch (err) {
-    console.error('Errore di autenticazione:', err);
-    return false;
   }
+
+  console.log('User not logged in');
+  return { loggedIn: false, isAdmin: false };
 };
 
+// Definizione delle rotte
 const routes = [
   {
     path: '/home',
@@ -64,10 +60,11 @@ const routes = [
     path: '/admin',
     name: 'admin',
     component: AdminView,
-    meta: { requiresAuth: true }, // Rotta protetta
+    meta: { requiresAuth: true, requiresAdmin: true }, // Rotta protetta solo per admin
   },
 ];
 
+// Configurazione del router
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes,
@@ -75,18 +72,29 @@ const router = createRouter({
 
 // Guardia di navigazione globale
 router.beforeEach(async (to, from, next) => {
+  
   if (to.meta.requiresAuth) {
-    const loggedIn = await isAuthenticated();
+    const { loggedIn, isAdmin } = await isAuthenticated();
+
+    console.log('Is Admin:', isAdmin);
 
     if (loggedIn) {
-      next(); // Se autenticato, prosegui
+      if (to.meta.requiresAdmin && !isAdmin) {
+        next('/home'); // Reindirizza se non è un admin
+      } else {
+        next(); // Se è admin o non richiede admin, prosegui
+      }
     } else {
-      next('/accedi'); // Altrimenti reindirizza al login
+      next('/accedi'); // Reindirizza alla pagina di login
     }
-  } else if (to.name === 'accedi' && localStorage.getItem('loggedIn') === 'true') {
-    next('/home'); // Evita il login se già loggato
-  } else {
-    next(); // Prosegui alla rotta pubblica
+  } 
+  // Evita il login se già loggato
+  else if (to.name === 'accedi' && localStorage.getItem('loggedIn') === 'true') {
+    next('/home');
+  } 
+  // Rotte pubbliche
+  else {
+    next();
   }
 });
 
