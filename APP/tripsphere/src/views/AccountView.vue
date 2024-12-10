@@ -1,45 +1,46 @@
 <template>
   <div class="profile-container">
-    <div class="sidebar">
-      <ul>
-        <li>
-          <a href="#" @click="setSelectedSection('dati')" :class="{ active: selectedSection === 'dati' }">Dati</a>
-        </li>
-        <li>
-          <a href="#" @click="setSelectedSection('preferiti')" :class="{ active: selectedSection === 'preferiti' }">Preferiti</a>
-        </li>
-        <li>
-          <a href="#" @click="setSelectedSection('Esci')" :class="{ active: selectedSection === 'Esci' }">Esci</a>
-        </li>
-      </ul>
+    <!-- Banner -->
+    <div class="banner">
+      <img class="banner-image" :src="user.bannerUrl" alt="Profile Banner" />
+      <div v-if="editing" class="edit-icon banner-edit" @click="selectFile('banner')">
+        <i class="fas fa-pencil-alt"></i>
+        <input type="file" ref="bannerInput" class="hidden-input" @change="uploadFile('banner')" />
+      </div>
     </div>
 
-    <div class="main-content">
-      <div v-if="selectedSection === 'dati'" class="section">
-        <h3>Informazioni Account</h3>
-        <form @submit.prevent="updateProfile">
-          <label for="full-name">Nome completo:</label>
-          <input type="text" id="full-name" v-model="user.name" required />
-
-          <label for="email">Email:</label>
-          <input type="email" id="email" v-model="user.email" required />
-
-          <button type="submit">Salva modifiche</button>
-        </form>
+    <!-- Profile Details -->
+    <div class="profile-details">
+      <div class="profile-picture-wrapper">
+        <img class="profile-picture" :src="user.profilePictureUrl" alt="Profile" />
+        <div v-if="editing" class="edit-icon profile-edit" @click="selectFile('profile')">
+          <i class="fas fa-pencil-alt"></i>
+          <input type="file" ref="profileInput" class="hidden-input" @change="uploadFile('profile')" />
+        </div>
       </div>
+      <h2 class="username">@{{ user.username }}</h2>
+      <h3 class="full-name">{{ user.firstName }} {{ user.lastName }}</h3>
+    </div>
 
-      <div v-if="selectedSection === 'preferiti'" class="section">
-        <h3>I miei Preferiti</h3>
-        <ul>
-          <li v-for="favorite in favorites" :key="favorite.id">{{ favorite.name }}</li>
-        </ul>
-      </div>
+    <!-- Actions -->
+    <div class="actions">
+      <button class="edit-button" v-if="!editing" @click="startEditing">Modifica Profilo</button>
+      <button class="save-button" v-if="editing" @click="saveChanges">Salva</button>
+      <button class="cancel-button" v-if="editing" @click="cancelEditing">Annulla</button>
+      <button class="logout-button" @click="Logout">Esci</button>
+    </div>
 
-      <div v-if="selectedSection === 'Esci'" class="section">
-        <h3>Sicuro di voler uscire?</h3>
-        <ul>
-          <button @click="Logout">Esci</button>
-        </ul>
+    <!-- Content -->
+    <div class="content">
+      <div class="posts">
+        <h3>I tuoi Viaggi</h3>
+        <div v-if="posts.length > 0" class="post-grid">
+          <div v-for="post in posts" :key="post.id" class="post">
+            <img :src="post.imageUrl" alt="Post image" />
+            <p>{{ post.caption }}</p>
+          </div>
+        </div>
+        <p v-else>Non hai ancora pubblicato nulla.</p>
       </div>
     </div>
   </div>
@@ -49,46 +50,76 @@
 export default {
   data() {
     return {
-      selectedSection: 'dati',  // Sezione selezionata inizialmente
       user: {
-        name: '',
-        email: '',
+        username: '',
+        firstName: '',
+        lastName: '',
+        profilePictureUrl: 'https://via.placeholder.com/150',
+        bannerUrl: 'https://via.placeholder.com/1200x400',
       },
-      favorites: [], // Preferiti dell'utente
+      posts: [],
+      editing: false,
+      originalUser: null, // Per annullare le modifiche
     };
   },
   methods: {
-    setSelectedSection(section) {
-      this.selectedSection = section;
+    startEditing() {
+      this.editing = true;
+      this.originalUser = { ...this.user }; // Salva lo stato originale
     },
-    updateProfile() {
-      console.log("Profilo aggiornato:", this.user);
-      // Invia una richiesta per aggiornare i dati dell'utente nel backend
-      fetch('http://localhost:3000/account', {
+    saveChanges() {
+      // Logica per salvare i cambiamenti al server
+      console.log('Salvataggio modifiche:', this.user);
+      this.editing = false;
+    },
+    cancelEditing() {
+      this.user = { ...this.originalUser }; // Ripristina lo stato originale
+      this.editing = false;
+    },
+    selectFile(type) {
+      if (type === 'banner') {
+        this.$refs.bannerInput.click();
+      } else if (type === 'profile') {
+        this.$refs.profileInput.click();
+      }
+    },
+    uploadFile(type) {
+      const fileInput = type === 'banner' ? this.$refs.bannerInput : this.$refs.profileInput;
+      const file = fileInput.files[0];
+
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('type', type);
+
+      fetch('http://localhost:3000/upload', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: this.user.name,
-          email: this.user.email,
-        }),
+        credentials: 'include',
+        body: formData,
       })
         .then((response) => response.json())
         .then((data) => {
-          console.log("Profilo aggiornato con successo:", data);
+          if (type === 'banner') {
+            // Aggiorna l'URL del banner con la nuova immagine
+            this.user.bannerUrl = data.url;
+          } else if (type === 'profile') {
+            // Aggiorna l'URL dell'immagine profilo con la nuova immagine
+            this.user.profilePictureUrl = data.url;
+          }
         })
-        .catch((error) => console.error('Errore nell\'aggiornamento del profilo:', error));
+        .catch((error) => console.error('Errore durante il caricamento:', error));
     },
+
     Logout() {
       fetch('http://localhost:3000/logout', {
         method: 'POST',
-        credentials: 'include', // Necessario per includere i cookie
+        credentials: 'include',
       })
         .then((response) => {
           if (response.ok) {
             localStorage.clear();
-            this.$router.push('/accedi'); // Reindirizza alla pagina di login
+            this.$router.push('/accedi');
           } else {
             console.error('Errore durante il logout');
           }
@@ -97,134 +128,143 @@ export default {
     },
   },
   mounted() {
-    // Recupera i dati dell'utente autenticato dal backend
     fetch('http://localhost:3000/account', {
       method: 'GET',
-      credentials: 'include', // Necessario per includere i cookie
+      credentials: 'include',
     })
       .then((response) => response.json())
       .then((data) => {
-        if (data.name && data.email) {
-          this.user.name = data.name;
-          this.user.email = data.email;
-          // Se l'utente ha preferiti, aggiorna la lista
-          if (data.favorites) {
-            this.favorites = data.favorites;
-          }
-        } else {
-          console.error('Dati utente non trovati');
+        if (data.user) {
+          this.user = {
+            username: data.user.username,
+            firstName: data.user.firstName,
+            lastName: data.user.lastName,
+            profilePictureUrl: data.user.profilePictureUrl || this.user.profilePictureUrl,
+            bannerUrl: data.user.bannerUrl || this.user.bannerUrl,
+          };
+        }
+        if (data.posts) {
+          this.posts = data.posts;
         }
       })
-      .catch((error) => console.error('Errore nel recupero dei dati utente:', error));
+      .catch((error) => console.error('Errore nel recupero dei dati:', error));
   },
 };
 </script>
 
 <style scoped>
-/* Stile di login */
+/* Stile base */
 .profile-container {
-  display: flex;
-  height: 100vh;
-  background-color: #f4f4f9;
   font-family: 'Roboto', sans-serif;
-}
-
-.sidebar {
-  width: 260px;
-  background-color: #333;
-  color: #fff;
-  padding: 30px 20px;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-  border-radius: 10px 0 0 10px;
-}
-
-.sidebar ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-.sidebar ul li {
-  margin: 20px 0;
-}
-
-.sidebar ul li a {
-  text-decoration: none;
-  color: #fff;
-  font-size: 18px;
-  font-weight: 500;
-  transition: color 0.3s;
-}
-
-.sidebar ul li a.active,
-.sidebar ul li a:hover {
-  color: #ffd700;
-}
-
-.main-content {
-  flex: 1;
-  padding: 40px;
-  background-color: #fff;
-  border-radius: 10px;
-  margin-left: 20px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-}
-
-.section {
-  margin-top: 20px;
-}
-
-.section h3 {
-  font-size: 22px;
-  font-weight: 600;
   color: #333;
-  margin-bottom: 20px;
-}
-
-.section label {
-  font-size: 14px;
-  color: #555;
-  margin: 8px 0 5px;
-}
-
-.section input {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
   width: 100%;
-  padding: 12px;
-  margin-bottom: 20px;
-  border: 2px solid #ddd;
-  border-radius: 6px;
-  background-color: #f9f9f9;
-  font-size: 16px;
-  transition: border-color 0.3s;
+  background-color: #f4f4f9;
 }
 
-.section input:focus {
-  border-color: #4CAF50;
-  outline: none;
-  background-color: #fff;
+/* Banner */
+.banner {
+  width: 100%;
+  height: 30vh;
+  background-color: #ddd;
+  position: relative;
 }
 
-.section button {
-  padding: 12px 20px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
+.banner-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-details {
+  text-align: center;
+  margin-top: -75px;
+}
+
+.profile-picture-wrapper {
+  position: relative;
+}
+
+.profile-picture {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Icone di modifica */
+.edit-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
   transition: background-color 0.3s;
 }
 
-.section button:hover {
-  background-color: #45a049;
+.edit-icon:hover {
+  background: rgba(0, 0, 0, 0.8);
 }
 
-ul {
-  padding-left: 20px;
+.hidden-input {
+  display: none;
 }
 
-li {
-  margin: 10px 0;
+/* Pulsanti */
+.actions button {
+  margin: 5px;
+  padding: 10px 20px;
   font-size: 16px;
-  color: #333;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.edit-button {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.edit-button:hover {
+  background-color: #0056b3;
+}
+
+.save-button {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.save-button:hover {
+  background-color: #218838;
+}
+
+.cancel-button {
+  background-color: #ffc107;
+  color: #fff;
+}
+
+.cancel-button:hover {
+  background-color: #e0a800;
+}
+
+.logout-button {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.logout-button:hover {
+  background-color: #b02a37;
 }
 </style>
