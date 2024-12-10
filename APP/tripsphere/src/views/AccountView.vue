@@ -87,6 +87,7 @@ export default {
       })
         .then((response) => {
           if (response.ok) {
+            localStorage.clear();
             this.$router.push('/accedi'); // Reindirizza alla pagina di login
           } else {
             console.error('Errore durante il logout');
