@@ -2,8 +2,10 @@ const express = require('express');
 const sqlite3 = require('sqlite3');
 const cors = require('cors');
 const session = require('express-session');
+
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const path = require('path');
 
 const app = express();
 const port = 3000;
@@ -22,7 +24,10 @@ app.use(
 app.use(cors({ origin: ['http://localhost:8080'], credentials: true }));
 app.use(express.json());
 
-// Configurazione del database SQLite
+
+const DBMock = require('./DBmock.js'); // Supponiamo che DBMock.js esista nella stessa cartella
+//const db = new DBMock(); // Creiamo un'istanza del mock
+
 const db = new sqlite3.Database('./database.db', (err) => {
   if (err) return console.error('Errore connessione DB:', err.message);
   console.log('Connesso al database SQLite');
@@ -57,6 +62,13 @@ const swaggerOptions = {
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+
+app.use(express.static(path.join(__dirname, 'public')));
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 
 /**
  * @swagger
@@ -202,6 +214,34 @@ app.get('/account', (req, res) => {
     res.status(401).json({ message: 'Non autenticato' });
   }
 });
+
+
+
+
+
+
+
+app.get('/utenti', (req, res) => {
+  db.all(`SELECT * FROM utenti`, [], (err, rows) => {
+      if (err) {
+          return res.status(500).json({ error: err.message });
+      }
+      res.json({ utenti: rows });
+  });
+});
+app.get('/utenti/filtrati', (req, res) => {
+  const { nazionalita } = req.query;
+  if (!nazionalita) {
+      return res.status(400).json({ error: 'Nazionalità non specificata' });
+  }
+  db.all(`SELECT * FROM utenti WHERE nazionalita = ?`, [nazionalita], (err, rows) => {
+      if (err) {
+          return res.status(500).json({ error: err.message });
+      }
+      res.json({ utenti: rows });
+  });
+});
+
 
 
 // Avvio del server
