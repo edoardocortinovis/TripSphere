@@ -16,6 +16,11 @@
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
     </form>
+
+    <button @click="loginWithGoogle" class="google-login-button">
+      Accedi con Google
+    </button>
+
     <p class="login-link">Non hai un account? <router-link to="/registra">Registrati qui</router-link></p>
   </div>
 
@@ -72,29 +77,60 @@ export default {
     this.errorMessage = 'Errore di connessione al server.';
     this.successMessage = '';
   }
-}
+},
 
-  },
-  mounted() {
-    // Controlla lo stato di login
+loginWithGoogle() {
+  window.location.href = 'http://localhost:3000/auth/google'; // Reindirizza al login con Google
+}},
+
+mounted() {
+  // Controlla se ci sono parametri nella URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get('token');
+
+  if (token) {
+    // Se c'è un token, significa che l'utente ha fatto il login con Google
+    this.isLoggedIn = true;
+    localStorage.setItem('loggedIn', 'true');
+    localStorage.setItem('token', token);  // Salva il token nel localStorage
+    this.$router.push('/home'); // Reindirizza alla pagina principale
+  } else {
+    // Se l'utente è già loggato, reindirizza
     const loggedIn = localStorage.getItem('loggedIn') === 'true';
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
-
     if (loggedIn) {
-      this.isLoggedIn = true;
-      // Redirige alla pagina corretta
       if (isAdmin) {
         this.$router.push('/admin');
       } else {
         this.$router.push('/home');
       }
     }
-  },
+  }
+}
+
 };
 </script>
 
 
 <style scoped>
+
+.google-login-button {
+  width: 100%;
+  padding: 0.8rem;
+  background-color: #4285f4; /* Colore blu di Google */
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 1rem;
+}
+
+.google-login-button:hover {
+  background-color: #357ae8; /* Colore blu più scuro di Google */
+}
+
 .login-container {
   max-width: 400px;
   margin: 0 auto;

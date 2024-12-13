@@ -118,6 +118,8 @@ export default {
       })
         .then((response) => {
           if (response.ok) {
+            localStorage.removeItem('loggedIn');
+            localStorage.removeItem('token');
             localStorage.clear();
             this.$router.push('/accedi');
           } else {

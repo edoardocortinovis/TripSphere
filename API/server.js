@@ -2,6 +2,10 @@ const express = require('express');
 const sqlite3 = require('sqlite3');
 const cors = require('cors');
 const session = require('express-session');
+require('dotenv').config();
+
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
@@ -10,22 +14,133 @@ const path = require('path');
 const app = express();
 const port = 3000;
 
-// Configurazione express-session
 app.use(
   session({
     secret: 'TripsphereEdoCorti',
     resave: false,
     saveUninitialized: true,
-    cookie: { maxAge: 3600000 }, // 1 ora
+    cookie: {
+      maxAge: 3600000, // 1 ora
+      httpOnly: true, // Non accessibile da JavaScript
+      secure: process.env.NODE_ENV === 'production', // Usa HTTPS in produzione
+    },
   })
 );
+
 
 // Middleware
 app.use(cors({ origin: ['http://localhost:8080'], credentials: true }));
 app.use(express.json());
+app.use(passport.initialize());
+app.use(passport.session());
 
+passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: 'http://localhost:3000/auth/google/callback',
+  passReqToCallback: true,
+  scope: [
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'https://www.googleapis.com/auth/userinfo.email'
+  ]
+},
+(req, token, tokenSecret, profile, done) => {
+  // Log the entire profile to understand its structure
+  console.log('Full Google Profile:', JSON.stringify(profile, null, 2));
 
-const DBMock = require('./DBmock.js'); // Supponiamo che DBMock.js esista nella stessa cartella
+  // Extract email more robustly
+  const email = profile.emails && profile.emails.length > 0 
+    ? profile.emails[0].value 
+    : profile._json.email // Try alternative email extraction
+    || `${profile.id}@googleid.com`; // Fallback email generation
+
+  // Ensure we have a valid email
+  if (!email) {
+    return done(new Error('Cannot retrieve email from Google profile'));
+  }
+
+  // Destructure other user details
+  const firstName = profile.name.givenName || profile.displayName.split(' ')[0];
+  const lastName = profile.name.familyName || profile.displayName.split(' ').slice(1).join(' ');
+
+  // Connessione al database SQLite
+  db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, row) => {
+    if (err) return done(err);
+
+    if (!row) {
+      // Se l'utente non esiste, crealo
+      db.run(
+        `INSERT INTO utenti (nome, cognome, email) VALUES (?, ?, ?)`,
+        [firstName, lastName, email],
+        function (insertErr) {
+          if (insertErr) return done(insertErr);
+          
+          // Passa il profilo con l'email aggiunta
+          const userProfile = { ...profile, email };
+          return done(null, userProfile);
+        }
+      );
+    } else {
+      // Se l'utente esiste, fai login
+      const userProfile = { ...profile, email };
+      return done(null, userProfile);
+    }
+  });
+  (req, accessToken, refreshToken, profile, done) => {
+    try {
+      console.log('Full Google Profile:', JSON.stringify(profile, null, 2));
+  
+      // More robust email extraction
+      const email = 
+        profile.emails?.[0]?.value || 
+        profile._json?.email || 
+        `${profile.id}@googleid.com`;
+  
+      if (!email) {
+        return done(new Error('Cannot retrieve email from Google profile'));
+      }
+  
+      // Extract names safely
+      const firstName = profile.name?.givenName || profile.displayName?.split(' ')[0] || 'Google';
+      const lastName = profile.name?.familyName || profile.displayName?.split(' ').slice(1).join(' ') || 'User';
+  
+      // Database operation
+      db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, row) => {
+        if (err) return done(err);
+  
+        if (!row) {
+          // Create new user if not exists
+          db.run(
+            `INSERT INTO utenti (nome, cognome, email) VALUES (?, ?, ?)`,
+            [firstName, lastName, email],
+            function (insertErr) {
+              if (insertErr) return done(insertErr);
+              return done(null, { ...profile, email });
+            }
+          );
+        } else {
+          // User exists, proceed with login
+          return done(null, { ...profile, email });
+        }
+      });
+    } catch (error) {
+      console.error('Google OAuth Error:', error);
+      done(error);
+    }
+  };
+  
+  // Serialize and deserialize user for session management
+  passport.serializeUser((user, done) => {
+    done(null, user.email);
+  });
+  
+  passport.deserializeUser((email, done) => {
+    db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, user) => {
+      done(err, user);
+    });
+  });
+}));
+//const DBMock = require('./DBmock.js');
 //const db = new DBMock(); // Creiamo un'istanza del mock
 
 const db = new sqlite3.Database('./database.db', (err) => {
@@ -66,8 +181,23 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+app.get('/auth/google',
+  passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/plus.login'] })
+);
+
+// Il callback di Google dopo l'autenticazione
+app.get('/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/accedi' }),
+  (req, res) => {
+    req.session.loggedin = true;
+    req.session.userId = req.user.id; // Puoi usare req.user per ottenere i dettagli dell'utente
+    // Reindirizza al frontend, includendo un token o altre informazioni utente
+    res.redirect(`http://localhost:8080/home?token=${req.sessionID}`); // Puoi passare l'ID della sessione o un token JWT
+  }
+);
 
 
 /**
@@ -216,33 +346,26 @@ app.get('/account', (req, res) => {
 });
 
 
-
-
-
-
-
 app.get('/utenti', (req, res) => {
   db.all(`SELECT * FROM utenti`, [], (err, rows) => {
-      if (err) {
-          return res.status(500).json({ error: err.message });
-      }
-      res.json({ utenti: rows });
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json({ utenti: rows });
   });
 });
 app.get('/utenti/filtrati', (req, res) => {
   const { nazionalita } = req.query;
   if (!nazionalita) {
-      return res.status(400).json({ error: 'Nazionalità non specificata' });
+    return res.status(400).json({ error: 'Nazionalità non specificata' });
   }
   db.all(`SELECT * FROM utenti WHERE nazionalita = ?`, [nazionalita], (err, rows) => {
-      if (err) {
-          return res.status(500).json({ error: err.message });
-      }
-      res.json({ utenti: rows });
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json({ utenti: rows });
   });
 });
-
-
 
 // Avvio del server
 app.listen(port, () => {
