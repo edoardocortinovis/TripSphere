@@ -35,13 +35,14 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  clientID: '',
+  clientSecret: '',
   callbackURL: 'http://localhost:3000/auth/google/callback',
   passReqToCallback: true,
   scope: [
     'https://www.googleapis.com/auth/userinfo.profile',
-    'https://www.googleapis.com/auth/userinfo.email'
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.password'
   ]
 },
 (req, token, tokenSecret, profile, done) => {
@@ -52,7 +53,7 @@ passport.use(new GoogleStrategy({
   const email = profile.emails && profile.emails.length > 0 
     ? profile.emails[0].value 
     : profile._json.email // Try alternative email extraction
-    || `${profile.id}@googleid.com`; // Fallback email generation
+    || `${profile.id}@gmail.com`; // Fallback email generation
 
   // Ensure we have a valid email
   if (!email) {

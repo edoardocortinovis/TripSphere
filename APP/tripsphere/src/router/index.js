@@ -70,32 +70,44 @@ const router = createRouter({
   routes,
 });
 
-// Guardia di navigazione globale
 router.beforeEach(async (to, from, next) => {
-  
+  const { loggedIn, isAdmin } = await isAuthenticated();
+
   if (to.meta.requiresAuth) {
-    const { loggedIn, isAdmin } = await isAuthenticated();
-
-    console.log('Is Admin:', isAdmin);
-
     if (loggedIn) {
-      if (to.meta.requiresAdmin && !isAdmin) {
-        next('/home'); // Reindirizza se non è un admin
-      } else {
-        next(); // Se è admin o non richiede admin, prosegui
+      // Se è un admin e tenta di accedere a una pagina diversa da /admin, reindirizza a /admin
+      if (isAdmin && to.path !== '/admin') {
+        next('/admin');
+      } 
+      // Se è un utente normale e tenta di accedere a una pagina admin, reindirizza a /home
+      else if (to.meta.requiresAdmin && !isAdmin) {
+        next('/home');
+      } 
+      // Altrimenti consenti l'accesso
+      else {
+        next();
       }
     } else {
       next('/accedi'); // Reindirizza alla pagina di login
     }
   } 
   // Evita il login se già loggato
-  else if (to.name === 'accedi' && localStorage.getItem('loggedIn') === 'true') {
-    next('/home');
+  else if (to.name === 'accedi' && loggedIn) {
+    if (isAdmin) {
+      next('/admin'); // Se è un admin già loggato, reindirizza a /admin
+    } else {
+      next('/home'); // Se è un utente normale già loggato, reindirizza a /home
+    }
   } 
   // Rotte pubbliche
   else {
-    next();
+    if (isAdmin && to.path !== '/admin') {
+      next('/admin'); // Se è admin, reindirizza sempre a /admin
+    } else {
+      next(); // Permetti accesso alle rotte pubbliche
+    }
   }
 });
+
 
 export default router;
