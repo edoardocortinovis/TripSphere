@@ -23,6 +23,7 @@ app.use(
       maxAge: 3600000, // 1 ora
       httpOnly: true, // Non accessibile da JavaScript
       secure: process.env.NODE_ENV === 'production', // Usa HTTPS in produzione
+      sameSite: 'lax',
     },
   })
 );
@@ -35,8 +36,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 passport.use(new GoogleStrategy({
-  clientID: '',
-  clientSecret: '',
   callbackURL: 'http://localhost:3000/auth/google/callback',
   passReqToCallback: true,
   scope: [
@@ -45,101 +44,75 @@ passport.use(new GoogleStrategy({
     'https://www.googleapis.com/auth/userinfo.password'
   ]
 },
-(req, token, tokenSecret, profile, done) => {
-  // Log the entire profile to understand its structure
-  console.log('Full Google Profile:', JSON.stringify(profile, null, 2));
+async (req, accessToken, refreshToken, profile, done) => {
+  try {
+    // Enhanced debugging
+    console.log('Full Profile Object:', JSON.stringify(profile, null, 2));
+    console.log('Raw Profile:', profile._raw);
+    console.log('JSON Profile:', JSON.stringify(profile._json, null, 2));
+    console.log('Access Token:', accessToken);
 
-  // Extract email more robustly
-  const email = profile.emails && profile.emails.length > 0 
-    ? profile.emails[0].value 
-    : profile._json.email // Try alternative email extraction
-    || `${profile.id}@gmail.com`; // Fallback email generation
+    // Manual email extraction
+    const email = 
+      profile.emails?.[0]?.value || 
+      profile._json?.email || 
+      profile._raw?.email || 
+      `${profile.id}@googleid.com`;
 
-  // Ensure we have a valid email
-  if (!email) {
-    return done(new Error('Cannot retrieve email from Google profile'));
-  }
+    console.log('Extracted Email:', email);
 
-  // Destructure other user details
-  const firstName = profile.name.givenName || profile.displayName.split(' ')[0];
-  const lastName = profile.name.familyName || profile.displayName.split(' ').slice(1).join(' ');
+    // Names
+    const firstName = 
+      profile.name?.givenName || 
+      profile._json?.given_name || 
+      profile.displayName.split(' ')[0] || 
+      'Google';
+    
+    const lastName = 
+      profile.name?.familyName || 
+      profile._json?.family_name || 
+      profile.displayName.split(' ')[1] || 
+      'User';
 
-  // Connessione al database SQLite
-  db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, row) => {
-    if (err) return done(err);
-
-    if (!row) {
-      // Se l'utente non esiste, crealo
-      db.run(
-        `INSERT INTO utenti (nome, cognome, email) VALUES (?, ?, ?)`,
-        [firstName, lastName, email],
-        function (insertErr) {
-          if (insertErr) return done(insertErr);
-          
-          // Passa il profilo con l'email aggiunta
-          const userProfile = { ...profile, email };
-          return done(null, userProfile);
-        }
-      );
-    } else {
-      // Se l'utente esiste, fai login
-      const userProfile = { ...profile, email };
-      return done(null, userProfile);
-    }
-  });
-  (req, accessToken, refreshToken, profile, done) => {
-    try {
-      console.log('Full Google Profile:', JSON.stringify(profile, null, 2));
-  
-      // More robust email extraction
-      const email = 
-        profile.emails?.[0]?.value || 
-        profile._json?.email || 
-        `${profile.id}@googleid.com`;
-  
-      if (!email) {
-        return done(new Error('Cannot retrieve email from Google profile'));
+    // Database operation
+    db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, row) => {
+      if (err) {
+        console.error('Database Error:', err);
+        return done(err);
       }
-  
-      // Extract names safely
-      const firstName = profile.name?.givenName || profile.displayName?.split(' ')[0] || 'Google';
-      const lastName = profile.name?.familyName || profile.displayName?.split(' ').slice(1).join(' ') || 'User';
-  
-      // Database operation
-      db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, row) => {
-        if (err) return done(err);
-  
-        if (!row) {
-          // Create new user if not exists
-          db.run(
-            `INSERT INTO utenti (nome, cognome, email) VALUES (?, ?, ?)`,
-            [firstName, lastName, email],
-            function (insertErr) {
-              if (insertErr) return done(insertErr);
-              return done(null, { ...profile, email });
+
+      if (!row) {
+        // Create new user if not exists
+        db.run(
+          `INSERT INTO utenti (nome, cognome, email) VALUES (?, ?, ?)`,
+          [firstName, lastName, email],
+          function (insertErr) {
+            if (insertErr) {
+              console.error('Insertion Error:', insertErr);
+              return done(insertErr);
             }
-          );
-        } else {
-          // User exists, proceed with login
-          return done(null, { ...profile, email });
-        }
-      });
-    } catch (error) {
-      console.error('Google OAuth Error:', error);
-      done(error);
-    }
-  };
-  
-  // Serialize and deserialize user for session management
-  passport.serializeUser((user, done) => {
-    done(null, user.email);
-  });
-  
-  passport.deserializeUser((email, done) => {
-    db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, user) => {
-      done(err, user);
+            return done(null, { 
+              id: this.lastID, 
+              nome: firstName, 
+              cognome: lastName, 
+              email: email 
+            });
+          }
+        );
+      } else {
+        // User exists, proceed with login
+        return done(null, { 
+          id: row.id, 
+          nome: row.nome, 
+          cognome: row.cognome, 
+          email: email 
+        });
+      }
     });
-  });
+  } catch (error) {
+    console.error('Google OAuth Complete Error:', error);
+    done(error);
+  }
 }));
 //const DBMock = require('./DBmock.js');
 //const db = new DBMock(); // Creiamo un'istanza del mock
@@ -148,6 +121,12 @@ const db = new sqlite3.Database('./database.db', (err) => {
   if (err) return console.error('Errore connessione DB:', err.message);
   console.log('Connesso al database SQLite');
 });
+
+app.use((req, res, next) => {
+  console.log("Cookie della sessione:", req.cookies);
+  next();
+});
+
 
 // Creazione della tabella utenti se non esiste
 db.run(`
@@ -185,20 +164,66 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+passport.serializeUser((user, done) => {
+  done(null, user.email); // Salva l'email nella sessione
+});
+
+passport.deserializeUser((email, done) => {
+  db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, row) => {
+    if (err) return done(err);
+    done(null, row);
+  });
+});
+
+
+
 app.get('/auth/google',
-  passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/plus.login'] })
+  passport.authenticate('google', { 
+    scope: [
+      'profile', 
+      'email',
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile'
+    ] 
+  })
 );
 
-// Il callback di Google dopo l'autenticazione
-app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/accedi' }),
+app.get('/auth/google/callback', 
+  passport.authenticate('google', { 
+    failureRedirect: '/accedi', 
+    failureMessage: true 
+  }),
   (req, res) => {
-    req.session.loggedin = true;
-    req.session.userId = req.user.id; // Puoi usare req.user per ottenere i dettagli dell'utente
-    // Reindirizza al frontend, includendo un token o altre informazioni utente
-    res.redirect(`http://localhost:8080/home?token=${req.sessionID}`); // Puoi passare l'ID della sessione o un token JWT
+    console.log('Utente autenticato:', req.user);
+    console.log('Sessione:', req.session);
+    console.log('Session ID:', req.sessionID);
+    
+    if (req.user) {
+      req.login(req.user, (err) => {
+        if (err) {
+          console.error('Errore nel login:', err);
+          return res.redirect('/accedi');
+        }
+        req.session.loggedin = true;
+        req.session.user = req.user;
+        
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error('Errore nel salvare la sessione:', saveErr);
+            return res.redirect('/accedi');
+          }
+          console.log('Sessione salvata con successo');
+          res.redirect(`http://localhost:8080/home?token=${req.sessionID}`);
+        });
+      });
+    } else {
+      console.log('Nessun utente trovato');
+      res.redirect('/accedi');
+    }
   }
 );
+
+
 
 
 /**
@@ -269,36 +294,130 @@ app.post('/registra', (req, res) => {
  */
 app.post('/accedi', (req, res) => {
   const { email, password } = req.body;
+  console.log('Tentativo di login con email:', email);
 
+  // Admin login check
   if (email === 'admin@admin.it' && password === 'admin') {
     req.session.loggedin = true;
     req.session.isAdmin = true;
-    return res.json({
-      success: true,
-      isAdmin: true,
-      email: 'admin@admin.it',
-      password: 'admin'
-    });
-  }
-
-  db.get(`SELECT * FROM utenti WHERE email = ? AND password = ?`, [email, password], (err, row) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (row) {
-      req.session.loggedin = true;
-      req.session.userId = row.id;
-      req.session.isAdmin = false;
+    req.session.email = email;
+    
+    req.session.save((err) => {
+      if (err) {
+        console.error('Errore nel salvare la sessione admin:', err);
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Errore nel salvataggio della sessione' 
+        });
+      }
+      
+      console.log('Accesso come admin riuscito');
       return res.json({
         success: true,
-        isAdmin: false,
-        email: row.email,
-        password: row.password
+        isAdmin: true,
+        email: 'admin@admin.it',
+        message: 'Login admin effettuato con successo'
       });
+    });
+    return;
+  }
+
+  // Regular user login
+  db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, row) => {
+    if (err) {
+      console.error('Errore database:', err);
+      return res.status(500).json({ 
+        success: false,
+        message: 'Errore interno del server' 
+      });
+    }
+
+    // If no user found, create a new account
+    if (!row) {
+      // Validate input before creating account
+      if (!email || !password) {
+        return res.status(400).json({ 
+          success: false,
+          message: 'Email e password sono obbligatorie' 
+        });
+      }
+
+      // Generate a default name if not provided
+      const defaultName = email.split('@')[0];
+
+      db.run(
+        `INSERT INTO utenti (nome, email, password) VALUES (?, ?, ?)`,
+        [defaultName, email, password],
+        function (insertErr) {
+          if (insertErr) {
+            console.error('Errore durante la creazione dell\'utente:', insertErr);
+            return res.status(500).json({ 
+              success: false,
+              message: 'Impossibile creare l\'account' 
+            });
+          }
+
+          // Create session for new user
+          req.session.loggedin = true;
+          req.session.userId = this.lastID;
+          req.session.email = email;
+          
+          // Explicitly save the session
+          req.session.save((saveErr) => {
+            if (saveErr) {
+              console.error('Errore nel salvare la sessione:', saveErr);
+              return res.status(500).json({ 
+                success: false,
+                message: 'Errore nel salvataggio della sessione' 
+              });
+            }
+
+            return res.json({
+              success: true,
+              isAdmin: false,
+              email: email,
+              userId: this.lastID,
+              message: 'Nuovo account creato e login effettuato'
+            });
+          });
+        }
+      );
     } else {
-      res.status(401).json({ message: 'Credenziali errate' });
+      // Existing user login
+      if (row.password !== password) {
+        return res.status(401).json({ 
+          success: false,
+          message: 'Password errata' 
+        });
+      }
+
+      // Create session for existing user
+      req.session.loggedin = true;
+      req.session.userId = row.id;
+      req.session.email = email;
+      
+      // Explicitly save the session
+      req.session.save((saveErr) => {
+        if (saveErr) {
+          console.error('Errore nel salvare la sessione:', saveErr);
+          return res.status(500).json({ 
+            success: false,
+            message: 'Errore nel salvataggio della sessione' 
+          });
+        }
+
+        return res.json({
+          success: true,
+          isAdmin: false,
+          email: row.email,
+          userId: row.id,
+          nome: row.nome,
+          message: 'Login effettuato con successo'
+        });
+      });
     }
   });
 });
-
 
 /**
  * @swagger
@@ -347,6 +466,53 @@ app.get('/account', (req, res) => {
 });
 
 
+//GESTIONE PAGINA ADMIN
+app.get('/users', (req, res) => {
+  const query = "SELECT * FROM utenti"; // Tabella "utenti"
+  db.all(query, [], (err, rows) => {
+    if (err) {
+      console.error("Errore durante il recupero degli utenti:", err.message);
+      return res.status(500).json({ error: "Errore durante il recupero degli utenti" });
+    }
+    res.json(rows); // Invia i risultati come JSON
+  });
+});
+
+app.put('/utenti/:id', (req, res) => {
+  const userId = req.params.id;
+  // Controlla se l'utente esiste
+  db.get('SELECT * FROM utenti WHERE id = ?', [userId], (err, row) => {
+    if (err || !row) {
+      return res.status(404).json({ error: 'Utente non trovato' });
+    }
+    // Aggiorna i dati dell'utente
+    db.run(
+      `UPDATE utenti SET nome = ?, cognome = ?, email = ?, nazionalita = ?, data = ? WHERE id = ?`,
+      [req.body.nome, req.body.cognome, req.body.email, req.body.nazionalita, req.body.data, userId],
+      function (err) {
+        if (err) {
+          return res.status(500).json({ error: 'Errore durante l\'aggiornamento dell\'utente' });
+        }
+        res.json({ message: 'Utente aggiornato con successo' });
+      }
+    );
+  });
+});
+
+
+app.delete('/utenti/:id', (req, res) => {
+  const { id } = req.params;
+
+  db.run(`DELETE FROM utenti WHERE id = ?`, [id], function (err) {
+    if (err) {
+      return res.status(500).send({ error: 'Errore durante l\'eliminazione dell\'utente' });
+    }
+    res.send({ success: true });
+  });
+});
+
+
+//GESTIONE UTENTI AJAX
 app.get('/utenti', (req, res) => {
   db.all(`SELECT * FROM utenti`, [], (err, rows) => {
     if (err) {
