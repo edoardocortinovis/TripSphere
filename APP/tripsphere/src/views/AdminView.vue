@@ -26,7 +26,6 @@
           <table class="user-table">
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Nome</th>
                 <th>Cognome</th>
                 <th>Email</th>
@@ -37,7 +36,6 @@
             </thead>
             <tbody>
               <tr v-for="user in users" :key="user.id">
-                <td>{{ user.id }}</td>
                 <td>{{ user.nome }}</td>
                 <td>{{ user.cognome }}</td>
                 <td>{{ user.email }}</td>
@@ -103,24 +101,25 @@ export default {
         });
     },
     fetchUsers() {
-      fetch('http://localhost:3000/utenti', {
-        method: 'GET',
-        credentials: 'include', // Include i cookie di sessione
-      })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Errore durante il recupero degli utenti');
-          }
-          return response.json();
-        })
-        .then(data => {
-          console.log('Utenti recuperati:', data);
-          this.users = data.utenti; // Aggiorna l'array degli utenti
-        })
-        .catch(error => {
-          console.error('Errore:', error);
-        });
-    },
+  fetch('http://localhost:3000/utenti', {
+    method: 'GET',
+    credentials: 'include', // Include i cookie di sessione
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Errore durante il recupero degli utenti');
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Dati degli utenti:', data); // Debug
+      this.users = data.utenti || []; // Accedi alla proprietà "utenti"
+    })
+    .catch(error => {
+      console.error('Errore:', error);
+    });
+},
+
     editUser(user) {
       // Chiede di modificare il nome dell'utente come esempio
       const nuovoNome = prompt("Modifica il nome dell'utente:", user.nome);

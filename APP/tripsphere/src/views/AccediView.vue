@@ -42,60 +42,50 @@ export default {
   },
   methods: {
     async loginUser() {
-  try {
-    const response = await fetch('http://localhost:3000/accedi', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: this.email, password: this.password }),
-    });
-    const result = await response.json();
+      try {
+        const response = await fetch('http://localhost:3000/accedi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: this.email, password: this.password }),
+        });
+        const result = await response.json();
 
-    if (response.ok) {
-      this.successMessage = 'Login effettuato con successo!';
-      this.errorMessage = '';
-      this.isLoggedIn = true;
+        if (response.ok) {
+          this.successMessage = 'Login effettuato con successo!';
+          this.errorMessage = '';
+          this.isLoggedIn = true;
 
-      // Salva lo stato in localStorage
-      localStorage.setItem('loggedIn', 'true');
-      localStorage.setItem('isAdmin', result.isAdmin ? 'true' : 'false'); // Verifica se è admin
+          // Salva lo stato in localStorage
+          localStorage.setItem('loggedIn', 'true');
+          localStorage.setItem('isAdmin', result.isAdmin ? 'true' : 'false'); // Verifica se è admin
 
-      // Salva anche l'email
-      localStorage.setItem('email', this.email);
-      localStorage.setItem('password', this.password);
+          // Salva anche l'email
+          localStorage.setItem('email', this.email);
+          localStorage.setItem('password', this.password);
 
-      // Redirige in base al ruolo
-      if (result.isAdmin) {
-        this.$router.push('/admin');
-      } else {
-        this.$router.push('/home');
+          // Redirige in base al ruolo
+          if (result.isAdmin) {
+            this.$router.push('/admin');
+          } else {
+            this.$router.push('/home');
+          }
+        } else {
+          this.errorMessage = result.message || 'Credenziali errate.';
+          this.successMessage = '';
+        }
+      } catch (error) {
+        this.errorMessage = 'Errore di connessione al server.';
+        this.successMessage = '';
       }
-    } else {
-      this.errorMessage = result.message || 'Credenziali errate.';
-      this.successMessage = '';
+    },
+
+    loginWithGoogle() {
+      window.location.href = 'http://localhost:3000/auth/google'; // Reindirizza al login con Google
     }
-  } catch {
-    this.errorMessage = 'Errore di connessione al server.';
-    this.successMessage = '';
-  }
-},
+  },
 
-loginWithGoogle() {
-  window.location.href = 'http://localhost:3000/auth/google'; // Reindirizza al login con Google
-}},
-
-mounted() {
-  // Controlla se ci sono parametri nella URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const token = urlParams.get('token');
-
-  if (token) {
-    // Se c'è un token, significa che l'utente ha fatto il login con Google
-    this.isLoggedIn = true;
-    localStorage.setItem('loggedIn', 'true');
-    localStorage.setItem('token', token);  // Salva il token nel localStorage
-    this.$router.push('/home'); // Reindirizza alla pagina principale
-  } else {
-    // Se l'utente è già loggato, reindirizza
+  mounted() {
+    // Verifica se l'utente è già loggato tramite localStorage
     const loggedIn = localStorage.getItem('loggedIn') === 'true';
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
     if (loggedIn) {
@@ -104,16 +94,24 @@ mounted() {
       } else {
         this.$router.push('/home');
       }
+    } else {
+      // Verifica anche se il login con Google ha già avuto successo tramite token URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+
+      if (token) {
+        // Se c'è un token, significa che l'utente ha fatto il login con Google
+        this.isLoggedIn = true;
+        localStorage.setItem('loggedIn', 'true');
+        localStorage.setItem('token', token); // Salva il token nel localStorage
+        this.$router.push('/home'); // Reindirizza alla pagina principale
+      }
     }
   }
-}
-
 };
 </script>
 
-
 <style scoped>
-
 .google-login-button {
   width: 100%;
   padding: 0.8rem;

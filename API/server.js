@@ -36,28 +36,15 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 passport.use(new GoogleStrategy({
+  
   callbackURL: 'http://localhost:3000/auth/google/callback',
-  passReqToCallback: true,
-  scope: [
-    'https://www.googleapis.com/auth/userinfo.profile',
-    'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.password'
-  ]
 },
-async (req, accessToken, refreshToken, profile, done) => {
+async (accessToken, refreshToken, profile, done) => {
   try {
-    // Enhanced debugging
-    console.log('Full Profile Object:', JSON.stringify(profile, null, 2));
-    console.log('Raw Profile:', profile._raw);
-    console.log('JSON Profile:', JSON.stringify(profile._json, null, 2));
-    console.log('Access Token:', accessToken);
-
-    // Manual email extraction
     const email = 
       profile.emails?.[0]?.value || 
       profile._json?.email || 
-      profile._raw?.email || 
-      `${profile.id}@googleid.com`;
+      profile._raw?.email ||
 
     console.log('Extracted Email:', email);
 
@@ -76,44 +63,33 @@ async (req, accessToken, refreshToken, profile, done) => {
 
     // Database operation
     db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, row) => {
-      if (err) {
-        console.error('Database Error:', err);
-        return done(err);
-      }
-
-      if (!row) {
-        // Create new user if not exists
+      if (err) return done(err);
+      
+      if (!user) {
+        // Nuovo utente
         db.run(
           `INSERT INTO utenti (nome, cognome, email) VALUES (?, ?, ?)`,
           [firstName, lastName, email],
-          function (insertErr) {
-            if (insertErr) {
-              console.error('Insertion Error:', insertErr);
-              return done(insertErr);
-            }
-            return done(null, { 
-              id: this.lastID, 
-              nome: firstName, 
-              cognome: lastName, 
-              email: email 
+          function (err) {
+            if (err) return done(err);
+            return done(null, {
+              id: this.lastID,
+              nome: firstName,
+              cognome: lastName,
+              email,
             });
           }
         );
       } else {
-        // User exists, proceed with login
-        return done(null, { 
-          id: row.id, 
-          nome: row.nome, 
-          cognome: row.cognome, 
-          email: email 
-        });
+        // Utente esistente
+        return done(null, user);
       }
     });
   } catch (error) {
-    console.error('Google OAuth Complete Error:', error);
     done(error);
   }
-}));
+}
+));
 //const DBMock = require('./DBmock.js');
 //const db = new DBMock(); // Creiamo un'istanza del mock
 
@@ -222,9 +198,6 @@ app.get('/auth/google/callback',
     }
   }
 );
-
-
-
 
 /**
  * @swagger
