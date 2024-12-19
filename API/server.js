@@ -2,6 +2,7 @@ const express = require('express');
 const sqlite3 = require('sqlite3');
 const cors = require('cors');
 const session = require('express-session');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const passport = require('passport');
@@ -23,99 +24,9 @@ app.use(
       maxAge: 3600000, // 1 ora
       httpOnly: true, // Non accessibile da JavaScript
       secure: process.env.NODE_ENV === 'production', // Usa HTTPS in produzione
-      sameSite: 'lax',
     },
   })
 );
-
-
-// Middleware
-app.use(cors({ origin: ['http://localhost:8080'], credentials: true }));
-app.use(express.json());
-app.use(passport.initialize());
-app.use(passport.session());
-
-passport.use(new GoogleStrategy({
-  
-  callbackURL: 'http://localhost:3000/auth/google/callback',
-},
-async (accessToken, refreshToken, profile, done) => {
-  try {
-    const email = 
-      profile.emails?.[0]?.value || 
-      profile._json?.email || 
-      profile._raw?.email ||
-
-    console.log('Extracted Email:', email);
-
-    // Names
-    const firstName = 
-      profile.name?.givenName || 
-      profile._json?.given_name || 
-      profile.displayName.split(' ')[0] || 
-      'Google';
-    
-    const lastName = 
-      profile.name?.familyName || 
-      profile._json?.family_name || 
-      profile.displayName.split(' ')[1] || 
-      'User';
-
-    // Database operation
-    db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, row) => {
-      if (err) return done(err);
-      
-      if (!user) {
-        // Nuovo utente
-        db.run(
-          `INSERT INTO utenti (nome, cognome, email) VALUES (?, ?, ?)`,
-          [firstName, lastName, email],
-          function (err) {
-            if (err) return done(err);
-            return done(null, {
-              id: this.lastID,
-              nome: firstName,
-              cognome: lastName,
-              email,
-            });
-          }
-        );
-      } else {
-        // Utente esistente
-        return done(null, user);
-      }
-    });
-  } catch (error) {
-    done(error);
-  }
-}
-));
-//const DBMock = require('./DBmock.js');
-//const db = new DBMock(); // Creiamo un'istanza del mock
-
-const db = new sqlite3.Database('./database.db', (err) => {
-  if (err) return console.error('Errore connessione DB:', err.message);
-  console.log('Connesso al database SQLite');
-});
-
-app.use((req, res, next) => {
-  console.log("Cookie della sessione:", req.cookies);
-  next();
-});
-
-
-// Creazione della tabella utenti se non esiste
-db.run(`
-  CREATE TABLE IF NOT EXISTS utenti (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome TEXT,
-    cognome TEXT,
-    data TEXT,
-    nazionalita TEXT,
-    email TEXT UNIQUE,
-    password TEXT
-  )
-`);
 
 // Configurazione Swagger
 const swaggerOptions = {
@@ -134,70 +45,185 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-
+//AJAX
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-passport.serializeUser((user, done) => {
-  done(null, user.email); // Salva l'email nella sessione
+// Middleware
+app.use(cors({ origin: ['http://localhost:8080'], credentials: true }));
+app.use(cookieParser());
+app.use(express.json());
+app.use(passport.initialize());
+app.use(passport.session());
+
+//const DBMock = require('./DBmock.js');
+//const db = new DBMock(); // Creiamo un'istanza del mock
+
+const db = new sqlite3.Database('./database.db', (err) => {
+  if (err) return console.error('Errore connessione DB:', err.message);
+  console.log('Connesso al database SQLite');
 });
 
-passport.deserializeUser((email, done) => {
+//Messaggio per rilevazione del cookie
+app.use((req, res, next) => {
+  console.log("Cookie della sessione:", req.cookies);
+  next();
+});
+
+// Creazione della tabella utenti se non esiste
+db.run(`
+  CREATE TABLE IF NOT EXISTS utenti (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT,
+    cognome TEXT,
+    data TEXT,
+    nazionalita TEXT,
+    email TEXT UNIQUE,
+    password TEXT
+  )
+`);
+
+//#region Goggle Auth
+passport.use(new GoogleStrategy({
+  
+  callbackURL: 'http://localhost:3000/auth/google/callback',
+  passReqToCallback: true,
+  scope: [
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.password'
+  ]
+},
+(req, token, tokenSecret, profile, done) => {
+  const email = profile.emails && profile.emails.length > 0 
+    ? profile.emails[0].value 
+    : profile._json.email // Try alternative email extraction
+    || `${profile.id}@googleid.com`; // Fallback email generation
+  // Ensure we have a valid email
+  if (!email) {
+    return done(new Error('Cannot retrieve email from Google profile'));
+  }
+
+const DBMock = require('./DBmock.js'); // Supponiamo che DBMock.js esista nella stessa cartella
+  // Destructure other user details
+  const firstName = profile.name.givenName || profile.displayName.split(' ')[0];
+  const lastName = profile.name.familyName || profile.displayName.split(' ').slice(1).join(' ');
+  // Connessione al database SQLite
   db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, row) => {
     if (err) return done(err);
-    done(null, row);
+    if (!row) {
+      // Se l'utente non esiste, crealo
+      db.run(
+        `INSERT INTO utenti (nome, cognome, email) VALUES (?, ?, ?)`,
+        [firstName, lastName, email],
+        function (insertErr) {
+          if (insertErr) return done(insertErr);
+          
+          // Passa il profilo con l'email aggiunta
+          const userProfile = { ...profile, email };
+          return done(null, userProfile);
+        }
+      );
+    } else {
+      // Se l'utente esiste, fai login
+      const userProfile = { ...profile, email };
+      return done(null, userProfile);
+    }
   });
+  (req, accessToken, refreshToken, profile, done) => {
+    try {
+      console.log('Full Google Profile:', JSON.stringify(profile, null, 2));
+  
+      // More robust email extraction
+      const email = 
+        profile.emails?.[0]?.value || 
+        profile._json?.email || 
+        `${profile.id}@googleid.com`;
+  
+      if (!email) {
+        return done(new Error('Cannot retrieve email from Google profile'));
+      }
+  
+      // Extract names safely
+      const firstName = profile.name?.givenName || profile.displayName?.split(' ')[0] || 'Google';
+      const lastName = profile.name?.familyName || profile.displayName?.split(' ').slice(1).join(' ') || 'User';
+  
+      // Database operation
+      db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, row) => {
+        if (err) return done(err);
+  
+        if (!row) {
+          // Create new user if not exists
+          db.run(
+            `INSERT INTO utenti (nome, cognome, email) VALUES (?, ?, ?)`,
+            [firstName, lastName, email],
+            function (insertErr) {
+              if (insertErr) return done(insertErr);
+              return done(null, { ...profile, email });
+            }
+          );
+        } else {
+          // User exists, proceed with login
+          return done(null, { ...profile, email });
+        }
+      });
+    } catch (error) {
+      console.error('Google OAuth Error:', error);
+      done(error);
+    }
+  };
+  
+  // Serialize and deserialize user for session management
+  passport.serializeUser((user, done) => {
+    done(null, user.email);
+  });
+  
+  passport.deserializeUser((email, done) => {
+    db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, user) => {
+      done(err, user);
+    });
+  });
+}));
+
+passport.serializeUser(function(user, done) {
+  done(null, user.id); // Salva solo l'ID dell'utente nella sessione
 });
 
+passport.deserializeUser(async function(id, done) {
+  // Recupera l'utente dal database usando l'ID
+  const user = await User.findByPk(id);
+  done(null, user);
+});
 
 
 app.get('/auth/google',
-  passport.authenticate('google', { 
-    scope: [
-      'profile', 
-      'email',
-      'https://www.googleapis.com/auth/userinfo.email',
-      'https://www.googleapis.com/auth/userinfo.profile'
-    ] 
-  })
+  passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/plus.login'] })
 );
-
-app.get('/auth/google/callback', 
-  passport.authenticate('google', { 
-    failureRedirect: '/accedi', 
-    failureMessage: true 
-  }),
+// Il callback di Google dopo l'autenticazione
+app.get('/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/accedi' }),
   (req, res) => {
-    console.log('Utente autenticato:', req.user);
-    console.log('Sessione:', req.session);
-    console.log('Session ID:', req.sessionID);
-    
-    if (req.user) {
-      req.login(req.user, (err) => {
-        if (err) {
-          console.error('Errore nel login:', err);
-          return res.redirect('/accedi');
-        }
-        req.session.loggedin = true;
-        req.session.user = req.user;
-        
-        req.session.save((saveErr) => {
-          if (saveErr) {
-            console.error('Errore nel salvare la sessione:', saveErr);
-            return res.redirect('/accedi');
-          }
-          console.log('Sessione salvata con successo');
-          res.redirect(`http://localhost:8080/home?token=${req.sessionID}`);
-        });
-      });
-    } else {
-      console.log('Nessun utente trovato');
-      res.redirect('/accedi');
-    }
+    req.session.loggedin = true;
+    req.session.userId = req.user.id; // Puoi usare req.user per ottenere i dettagli dell'utente
+    // Reindirizza al frontend, includendo un token o altre informazioni utente
+    res.redirect(`http://localhost:8080/home?token=${req.sessionID}`); // Puoi passare l'ID della sessione o un token JWT
   }
 );
+
+
+app.get(
+  '/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  (req, res) => {
+    // Reindirizza dove desideri dopo l'autenticazione
+    res.redirect('/');
+  }
+);
+
+
+//#endregion
 
 /**
  * @swagger
@@ -438,7 +464,7 @@ app.get('/account', (req, res) => {
   }
 });
 
-
+//#region Admin section
 //GESTIONE PAGINA ADMIN
 app.get('/users', (req, res) => {
   const query = "SELECT * FROM utenti"; // Tabella "utenti"
@@ -472,7 +498,6 @@ app.put('/utenti/:id', (req, res) => {
   });
 });
 
-
 app.delete('/utenti/:id', (req, res) => {
   const { id } = req.params;
 
@@ -483,7 +508,7 @@ app.delete('/utenti/:id', (req, res) => {
     res.send({ success: true });
   });
 });
-
+//#endregion
 
 //GESTIONE UTENTI AJAX
 app.get('/utenti', (req, res) => {

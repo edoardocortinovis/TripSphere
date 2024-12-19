@@ -11,21 +11,17 @@ const isAuthenticated = async () => {
   const userEmail = localStorage.getItem('email');
   const userPassword = localStorage.getItem('password');
   const loggedIn = localStorage.getItem('loggedIn') === 'true';
+  const googleAuth = localStorage.getItem('googleAuth') === 'true'; // Controllo Google OAuth
+  const isAdmin = userEmail === 'admin@admin.it' && userPassword === 'admin';
 
-  console.log('Recupero email:', userEmail);
-  console.log('Recupero password:', userPassword);
-
-  if (loggedIn) {
-    if (userEmail === 'admin@admin.it' && userPassword === 'admin') {
-      return { loggedIn: true, isAdmin: true }; // Admin trovato
-    } else {
-      return { loggedIn: true, isAdmin: false }; // Utente normale
-    }
+  if (loggedIn || googleAuth) {
+    return { loggedIn: true, isAdmin, googleAuth };
   }
 
   console.log('User not logged in');
-  return { loggedIn: false, isAdmin: false };
+  return { loggedIn: false, isAdmin: false, googleAuth: false };
 };
+
 
 // Definizione delle rotte
 const routes = [
@@ -70,42 +66,44 @@ const router = createRouter({
   routes,
 });
 
+// Vue Router - router/index.js
 router.beforeEach(async (to, from, next) => {
-  const { loggedIn, isAdmin } = await isAuthenticated();
+  try {
+    const { loggedIn, isAdmin, googleAuth } = await isAuthenticated(); // Controlla lo stato di autenticazione
 
-  if (to.meta.requiresAuth) {
-    if (loggedIn) {
-      // Se è un admin e tenta di accedere a una pagina diversa da /admin, reindirizza a /admin
-      if (isAdmin && to.path !== '/admin') {
-        next('/admin');
-      } 
-      // Se è un utente normale e tenta di accedere a una pagina admin, reindirizza a /home
-      else if (to.meta.requiresAdmin && !isAdmin) {
-        next('/home');
-      } 
-      // Altrimenti consenti l'accesso
-      else {
-        next();
+    // Se la rotta richiede autenticazione
+    if (to.meta.requiresAuth) {
+      if (loggedIn) {
+        // Se l'utente è autenticato ma non è un admin, reindirizza alla home
+        if (isAdmin && to.path !== '/admin') {
+          next('/admin');
+        } else if (to.meta.requiresAdmin && !isAdmin) {
+          // Se la rotta richiede un amministratore e l'utente non lo è, reindirizza alla home
+          next('/home');
+        } else {
+          // Se l'utente è autenticato e la rotta non richiede un amministratore, prosegue
+          next();
+        }
+      } else {
+        // Se l'utente non è autenticato, reindirizza alla pagina di login
+        next('/accedi');
+      }
+    }
+    // Evita l'accesso alla pagina di login se l'utente è già autenticato o autenticato tramite Google
+    else if (to.name === 'accedi' && (loggedIn || googleAuth)) {
+      if (isAdmin) {
+        next('/admin'); // Se l'utente è admin, reindirizza alla pagina admin
+      } else {
+        next('/home'); // Altrimenti, alla home
       }
     } else {
-      next('/accedi'); // Reindirizza alla pagina di login
+      // Se la rotta non richiede autenticazione, prosegue normalmente
+      next();
     }
-  } 
-  // Evita il login se già loggato
-  else if (to.name === 'accedi' && loggedIn) {
-    if (isAdmin) {
-      next('/admin'); // Se è un admin già loggato, reindirizza a /admin
-    } else {
-      next('/home'); // Se è un utente normale già loggato, reindirizza a /home
-    }
-  } 
-  // Rotte pubbliche
-  else {
-    if (isAdmin && to.path !== '/admin') {
-      next('/admin'); // Se è admin, reindirizza sempre a /admin
-    } else {
-      next(); // Permetti accesso alle rotte pubbliche
-    }
+  } catch (error) {
+    // In caso di errore (es. errore nella verifica dell'autenticazione), reindirizza alla login
+    console.error('Errore durante la verifica dell\'autenticazione:', error);
+    next('/accedi');
   }
 });
 

@@ -50,6 +50,11 @@
           </table>
         </div>
 
+        <div v-else-if="showAttractionSection">
+          <h2>Sezione Attrazioni</h2>
+          <button type="submit" class="edit-btn" @click="OpenModal()">+</button>
+        </div>
+
         <!-- Mostra il messaggio di benvenuto -->
         <div v-else>
           <h2>Benvenuto nella dashboard</h2>
@@ -67,59 +72,53 @@ export default {
     return {
       showLogoutConfirmation: false, // Stato per la conferma del logout
       showUserTable: true, // Stato iniziale: mostra subito la tabella degli utenti
+      showAttractionSection : true,
       users: [], // Array per memorizzare gli utenti recuperati dal database
     };
   },
   created() {
-    // Carica gli utenti non appena la pagina viene caricata
     this.fetchUsers();
+    this.fetchAttraction();
   },
   methods: {
+    //ATTRACTIONS SECTION
     goToAttractions() {
-      this.$router.push("/gestisci-attrazioni"); // Reindirizza alla pagina di gestione attrazioni
+      this.showLogoutConfirmation = false;
+      this.showUserTable = false; // Mostra la tabella degli utenti
+      this.fetchAttraction(); 
     },
+    fetchAttraction(){
+      console.log("ciao");
+    },
+    OpenModal(){
+      console.log("ciao");
+    },
+
+    //USER SECTION
     showUsers() {
       this.showLogoutConfirmation = false;
       this.showUserTable = true; // Mostra la tabella degli utenti
       this.fetchUsers(); // Recupera gli utenti dal database
     },
-    confirmLogout() {
-      this.showUserTable = false;
-      this.showLogoutConfirmation = true; // Mostra il messaggio di conferma
-    },
-    logout() {
-      fetch('http://localhost:3000/logout', {
-        method: 'POST',
-        credentials: 'include', // Include cookie di sessione
+    fetchUsers() {
+      fetch('http://localhost:3000/utenti', {
+        method: 'GET',
+        credentials: 'include', // Include i cookie di sessione
       })
-        .then(() => {
-          localStorage.clear();
-          this.$router.push("/accedi"); // Reindirizza alla pagina di login
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Errore durante il recupero degli utenti');
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log('Dati degli utenti:', data); // Debug
+          this.users = data.utenti || []; // Accedi alla proprietà "utenti"
         })
         .catch(error => {
-          console.error('Logout failed:', error);
+          console.error('Errore:', error);
         });
     },
-    fetchUsers() {
-  fetch('http://localhost:3000/utenti', {
-    method: 'GET',
-    credentials: 'include', // Include i cookie di sessione
-  })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Errore durante il recupero degli utenti');
-      }
-      return response.json();
-    })
-    .then(data => {
-      console.log('Dati degli utenti:', data); // Debug
-      this.users = data.utenti || []; // Accedi alla proprietà "utenti"
-    })
-    .catch(error => {
-      console.error('Errore:', error);
-    });
-},
-
     editUser(user) {
       // Chiede di modificare il nome dell'utente come esempio
       const nuovoNome = prompt("Modifica il nome dell'utente:", user.nome);
@@ -157,6 +156,25 @@ export default {
             console.error('Errore:', error);
           });
       }
+    },
+
+    //LOGOUT SECTION
+    logout() {
+      fetch('http://localhost:3000/logout', {
+        method: 'POST',
+        credentials: 'include', // Include cookie di sessione
+      })
+        .then(() => {
+          localStorage.clear();
+          this.$router.push("/accedi"); // Reindirizza alla pagina di login
+        })
+        .catch(error => {
+          console.error('Logout failed:', error);
+        });
+    },
+    confirmLogout() {
+      this.showUserTable = false;
+      this.showLogoutConfirmation = true; // Mostra il messaggio di conferma
     },
   },
 };

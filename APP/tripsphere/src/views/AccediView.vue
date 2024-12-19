@@ -107,15 +107,21 @@ export default {
         this.$router.push('/home'); // Reindirizza alla pagina principale
       }
     }
+    const isAuthenticated = localStorage.getItem("access_token");
+    if (isAuthenticated) {
+      this.$router.push({ name: "home" }); // O la tua pagina di destinazione
+    }
   }
 };
 </script>
+
 
 <style scoped>
 .google-login-button {
   width: 100%;
   padding: 0.8rem;
-  background-color: #4285f4; /* Colore blu di Google */
+  background-color: #4285f4;
+  /* Colore blu di Google */
   color: white;
   border: none;
   border-radius: 12px;
@@ -126,7 +132,8 @@ export default {
 }
 
 .google-login-button:hover {
-  background-color: #357ae8; /* Colore blu più scuro di Google */
+  background-color: #357ae8;
+  /* Colore blu più scuro di Google */
 }
 
 .login-container {
