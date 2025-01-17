@@ -37,6 +37,90 @@ export default {
       password: '',
       errorMessage: '',
       successMessage: '',
+      isLoggedIn: false,
+    };
+  },
+  methods: {
+    async loginUser() {
+      try {
+        const response = await fetch('http://localhost:3000/accedi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: this.email, password: this.password }),
+        });
+        const result = await response.json();
+
+        if (response.ok) {
+          this.successMessage = 'Login effettuato con successo!';
+          this.errorMessage = '';
+          this.isLoggedIn = true;
+
+          // Salva lo stato in localStorage
+          localStorage.setItem('loggedIn', 'true');
+          localStorage.setItem('email', this.email);
+          localStorage.setItem('password', this.password);
+          localStorage.setItem('isAdmin', result.isAdmin ? 'true' : 'false');
+          localStorage.setItem('googleAuth', 'false'); // Segna come login con email
+
+          // Reindirizza in base al ruolo
+          if (result.isAdmin) {
+            this.$router.push('/admin');
+          } else {
+            this.$router.push('/home');
+          }
+        } else {
+          this.errorMessage = result.message || 'Credenziali errate.';
+          this.successMessage = '';
+        }
+      } catch (error) {
+        this.errorMessage = 'Errore di connessione al server.';
+        this.successMessage = '';
+      }
+    },
+
+    loginWithGoogle() {
+      window.location.href = 'http://localhost:3000/auth/google'; // Reindirizza al login con Google
+    },
+  },
+
+  mounted() {
+    const loggedIn = localStorage.getItem('loggedIn') === 'true';
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
+    const googleAuth = localStorage.getItem('googleAuth') === 'true';
+
+    if (loggedIn) {
+      if (googleAuth) {
+        this.$router.push('/home'); // Se l'utente ha effettuato il login tramite Google
+      } else if (isAdmin) {
+        this.$router.push('/admin');
+      } else {
+        this.$router.push('/home');
+      }
+    } else {
+      // Verifica se il login con Google ha già avuto successo tramite token URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+
+      if (token) {
+        this.isLoggedIn = true;
+        localStorage.setItem('loggedIn', 'true');
+        localStorage.setItem('googleAuth', 'true'); // Segna come login tramite Google
+        localStorage.setItem('token', token); // Salva il token nel localStorage
+        this.$router.push('/home');
+      }
+    }
+  },
+};
+</script>
+
+<!--<script>
+export default {
+  data() {
+    return {
+      email: '',
+      password: '',
+      errorMessage: '',
+      successMessage: '',
       isLoggedIn: false, // Variabile per controllare lo stato di login
     };
   },
@@ -54,6 +138,8 @@ export default {
           this.successMessage = 'Login effettuato con successo!';
           this.errorMessage = '';
           this.isLoggedIn = true;
+
+          localStorage.setItem('googleAuth', 'true');
 
           // Salva lo stato in localStorage
           localStorage.setItem('loggedIn', 'true');
@@ -103,6 +189,7 @@ export default {
         // Se c'è un token, significa che l'utente ha fatto il login con Google
         this.isLoggedIn = true;
         localStorage.setItem('loggedIn', 'true');
+        localStorage.setItem('googleAuth', 'true');
         localStorage.setItem('token', token); // Salva il token nel localStorage
         this.$router.push('/home'); // Reindirizza alla pagina principale
       }
@@ -113,7 +200,7 @@ export default {
     }
   }
 };
-</script>
+</script>-->
 
 
 <style scoped>

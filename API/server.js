@@ -11,6 +11,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const path = require('path');
+const { Console } = require('console');
 
 const app = express();
 const port = 3000;
@@ -87,6 +88,7 @@ db.run(`
 
 //#region Goggle Auth
 passport.use(new GoogleStrategy({
+  
   callbackURL: 'http://localhost:3000/auth/google/callback',
   passReqToCallback: true,
   scope: [
@@ -95,130 +97,67 @@ passport.use(new GoogleStrategy({
     'https://www.googleapis.com/auth/userinfo.password'
   ]
 },
-(req, token, tokenSecret, profile, done) => {
-  const email = profile.emails && profile.emails.length > 0 
-    ? profile.emails[0].value 
-    : profile._json.email // Try alternative email extraction
-    || `${profile.id}@googleid.com`; // Fallback email generation
-  // Ensure we have a valid email
-  if (!email) {
-    return done(new Error('Cannot retrieve email from Google profile'));
-  }
-
-const DBMock = require('./DBmock.js'); // Supponiamo che DBMock.js esista nella stessa cartella
-  // Destructure other user details
-  const firstName = profile.name.givenName || profile.displayName.split(' ')[0];
-  const lastName = profile.name.familyName || profile.displayName.split(' ').slice(1).join(' ');
-  // Connessione al database SQLite
-  db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, row) => {
-    if (err) return done(err);
-    if (!row) {
-      // Se l'utente non esiste, crealo
-      db.run(
-        `INSERT INTO utenti (nome, cognome, email) VALUES (?, ?, ?)`,
-        [firstName, lastName, email],
-        function (insertErr) {
-          if (insertErr) return done(insertErr);
-          
-          // Passa il profilo con l'email aggiunta
-          const userProfile = { ...profile, email };
-          return done(null, userProfile);
-        }
-      );
-    } else {
-      // Se l'utente esiste, fai login
-      const userProfile = { ...profile, email };
-      return done(null, userProfile);
-    }
-  });
   (req, accessToken, refreshToken, profile, done) => {
     try {
+      // Log completo del profilo di Google
       console.log('Full Google Profile:', JSON.stringify(profile, null, 2));
-  
-      // More robust email extraction
-      const email = 
-        profile.emails?.[0]?.value || 
-        profile._json?.email || 
+
+      // Estrarre l'email dal profilo
+      const email =
+        profile.emails?.[0]?.value ||
+        profile._json?.email ||
         `${profile.id}@googleid.com`;
-  
+
+      // Se non c'è un'email, restituire un errore
       if (!email) {
         return done(new Error('Cannot retrieve email from Google profile'));
       }
-  
-      // Extract names safely
+
+      // Estrazione del nome e cognome in modo sicuro
       const firstName = profile.name?.givenName || profile.displayName?.split(' ')[0] || 'Google';
       const lastName = profile.name?.familyName || profile.displayName?.split(' ').slice(1).join(' ') || 'User';
-  
-      // Database operation
+
+      // Verifica se l'utente esiste nel database
       db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, row) => {
         if (err) return done(err);
-  
+
+        // Se l'utente non esiste, lo creiamo
         if (!row) {
-          // Create new user if not exists
           db.run(
             `INSERT INTO utenti (nome, cognome, email) VALUES (?, ?, ?)`,
             [firstName, lastName, email],
             function (insertErr) {
               if (insertErr) return done(insertErr);
-              return done(null, { ...profile, email });
+
+              // Passiamo il profilo dell'utente creato
+              const userProfile = { ...profile, email };
+              return done(null, userProfile);
             }
           );
         } else {
-          // User exists, proceed with login
-          return done(null, { ...profile, email });
+          // Se l'utente esiste, facciamo login
+          const userProfile = { ...profile, email };
+          return done(null, userProfile);
         }
       });
     } catch (error) {
       console.error('Google OAuth Error:', error);
-      done(error);
+      return done(error);
     }
-  };
-  
-  // Serialize and deserialize user for session management
-  passport.serializeUser((user, done) => {
-    done(null, user.email);
-  });
-  
-  passport.deserializeUser((email, done) => {
-    db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, user) => {
-      done(err, user);
-    });
-  });
-}));
+  }));
 
-passport.serializeUser(function(user, done) {
-  done(null, user.id); // Salva solo l'ID dell'utente nella sessione
+// Serialize user for session management
+passport.serializeUser((user, done) => {
+  done(null, user.email);
 });
 
-passport.deserializeUser(async (id, done) => {
-  try {
-    let user = await db.get('SELECT * FROM users WHERE id = ?', [id]);
-    
-    if (!user) {
-      // Se l'utente non viene trovato, ne creiamo uno nuovo
-      const defaultUser = {
-        id,
-        name: 'Default User',
-        email: `default-${id}@example.com`,
-        role: 'user', // Assegniamo un ruolo predefinito
-        nationality: 'unknown', // O un valore che abbia senso
-      };
-
-      await db.run(
-        'INSERT INTO users (id, name, email, role, nationality) VALUES (?, ?, ?, ?, ?)',
-        [defaultUser.id, defaultUser.name, defaultUser.email, defaultUser.role, defaultUser.nationality]
-      );
-
-      user = defaultUser; // Assegniamo l'utente appena creato
-    }
-
+// Deserialize user from session
+passport.deserializeUser((email, done) => {
+  db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, user) => {
+    if (err) return done(err);
     done(null, user);
-  } catch (err) {
-    done(err, null);
-  }
+  });
 });
-
-
 
 app.get('/auth/google',
   passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/plus.login'] })
@@ -230,21 +169,10 @@ app.get('/auth/google/callback',
     req.session.loggedin = true;
     req.session.userId = req.user.id; // Puoi usare req.user per ottenere i dettagli dell'utente
     // Reindirizza al frontend, includendo un token o altre informazioni utente
+    console.log("COSO RIUSCITO");
     res.redirect(`http://localhost:8080/home?token=${req.sessionID}`); // Puoi passare l'ID della sessione o un token JWT
   }
 );
-
-
-app.get(
-  '/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login' }),
-  (req, res) => {
-    // Reindirizza dove desideri dopo l'autenticazione
-    res.redirect('/');
-  }
-);
-
-
 //#endregion
 
 /**
@@ -322,16 +250,16 @@ app.post('/accedi', (req, res) => {
     req.session.loggedin = true;
     req.session.isAdmin = true;
     req.session.email = email;
-    
+
     req.session.save((err) => {
       if (err) {
         console.error('Errore nel salvare la sessione admin:', err);
-        return res.status(500).json({ 
-          success: false, 
-          message: 'Errore nel salvataggio della sessione' 
+        return res.status(500).json({
+          success: false,
+          message: 'Errore nel salvataggio della sessione'
         });
       }
-      
+
       console.log('Accesso come admin riuscito');
       return res.json({
         success: true,
@@ -347,9 +275,9 @@ app.post('/accedi', (req, res) => {
   db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, row) => {
     if (err) {
       console.error('Errore database:', err);
-      return res.status(500).json({ 
+      return res.status(500).json({
         success: false,
-        message: 'Errore interno del server' 
+        message: 'Errore interno del server'
       });
     }
 
@@ -357,9 +285,9 @@ app.post('/accedi', (req, res) => {
     if (!row) {
       // Validate input before creating account
       if (!email || !password) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          message: 'Email e password sono obbligatorie' 
+          message: 'Email e password sono obbligatorie'
         });
       }
 
@@ -372,9 +300,9 @@ app.post('/accedi', (req, res) => {
         function (insertErr) {
           if (insertErr) {
             console.error('Errore durante la creazione dell\'utente:', insertErr);
-            return res.status(500).json({ 
+            return res.status(500).json({
               success: false,
-              message: 'Impossibile creare l\'account' 
+              message: 'Impossibile creare l\'account'
             });
           }
 
@@ -382,14 +310,14 @@ app.post('/accedi', (req, res) => {
           req.session.loggedin = true;
           req.session.userId = this.lastID;
           req.session.email = email;
-          
+
           // Explicitly save the session
           req.session.save((saveErr) => {
             if (saveErr) {
               console.error('Errore nel salvare la sessione:', saveErr);
-              return res.status(500).json({ 
+              return res.status(500).json({
                 success: false,
-                message: 'Errore nel salvataggio della sessione' 
+                message: 'Errore nel salvataggio della sessione'
               });
             }
 
@@ -406,9 +334,9 @@ app.post('/accedi', (req, res) => {
     } else {
       // Existing user login
       if (row.password !== password) {
-        return res.status(401).json({ 
+        return res.status(401).json({
           success: false,
-          message: 'Password errata' 
+          message: 'Password errata'
         });
       }
 
@@ -416,14 +344,14 @@ app.post('/accedi', (req, res) => {
       req.session.loggedin = true;
       req.session.userId = row.id;
       req.session.email = email;
-      
+
       // Explicitly save the session
       req.session.save((saveErr) => {
         if (saveErr) {
           console.error('Errore nel salvare la sessione:', saveErr);
-          return res.status(500).json({ 
+          return res.status(500).json({
             success: false,
-            message: 'Errore nel salvataggio della sessione' 
+            message: 'Errore nel salvataggio della sessione'
           });
         }
 
