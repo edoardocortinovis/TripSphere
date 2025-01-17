@@ -87,7 +87,6 @@ db.run(`
 
 //#region Goggle Auth
 passport.use(new GoogleStrategy({
-  
   callbackURL: 'http://localhost:3000/auth/google/callback',
   passReqToCallback: true,
   scope: [
@@ -191,11 +190,34 @@ passport.serializeUser(function(user, done) {
   done(null, user.id); // Salva solo l'ID dell'utente nella sessione
 });
 
-passport.deserializeUser(async function(id, done) {
-  // Recupera l'utente dal database usando l'ID
-  const user = await User.findByPk(id);
-  done(null, user);
+passport.deserializeUser(async (id, done) => {
+  try {
+    let user = await db.get('SELECT * FROM users WHERE id = ?', [id]);
+    
+    if (!user) {
+      // Se l'utente non viene trovato, ne creiamo uno nuovo
+      const defaultUser = {
+        id,
+        name: 'Default User',
+        email: `default-${id}@example.com`,
+        role: 'user', // Assegniamo un ruolo predefinito
+        nationality: 'unknown', // O un valore che abbia senso
+      };
+
+      await db.run(
+        'INSERT INTO users (id, name, email, role, nationality) VALUES (?, ?, ?, ?, ?)',
+        [defaultUser.id, defaultUser.name, defaultUser.email, defaultUser.role, defaultUser.nationality]
+      );
+
+      user = defaultUser; // Assegniamo l'utente appena creato
+    }
+
+    done(null, user);
+  } catch (err) {
+    done(err, null);
+  }
 });
+
 
 
 app.get('/auth/google',
