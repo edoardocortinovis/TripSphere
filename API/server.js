@@ -66,11 +66,7 @@ const db = new sqlite3.Database('./database.db', (err) => {
   console.log('Connesso al database SQLite');
 });
 
-//Messaggio per rilevazione del cookie
-app.use((req, res, next) => {
-  console.log("Cookie della sessione:", req.cookies);
-  next();
-});
+
 
 // Creazione della tabella utenti se non esiste
 db.run(`
@@ -86,25 +82,23 @@ db.run(`
 `);
 
 //#region Google OAuth
-
 app.post('/auth/google', async (req, res) => {
-  const { idToken } = req.body;
+  const { credential } = req.body;
 
   try {
-    // Verifica il token ID con Google
     const ticket = await client.verifyIdToken({
-      idToken,
-      audience: CLIENT_ID, // Deve corrispondere al CLIENT_ID della tua app Google
+      idToken: credential,
+      audience: CLIENT_ID,
     });
 
     const payload = ticket.getPayload();
-    const email = payload.email;
-    const nome = payload.given_name || '';
-    const cognome = payload.family_name || '';
-    const username = email.split('@')[0];
-    const data = new Date().toISOString().split('T')[0]; // Data attuale in formato YYYY-MM-DD
 
-    console.log('Utente verificato con Google:', payload);
+    // Extract user details
+    const email = payload['email'];
+    const nome = payload['given_name'] || '';
+    const cognome = payload['family_name'] || '';
+    const data = new Date().toISOString().split('T')[0];
+    const nazionalita = payload['locale'] || null;
 
     // Controlla se l'utente esiste già nel database
     db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, user) => {
@@ -114,36 +108,70 @@ app.post('/auth/google', async (req, res) => {
       }
 
       if (!user) {
-        // L'utente non esiste, crealo
-        console.log('Utente non trovato, creazione in corso...');
+        // Crea un nuovo utente
         db.run(
           `INSERT INTO utenti (nome, cognome, data, email, password, nazionalita) 
            VALUES (?, ?, ?, ?, ?, ?)`,
-          [nome, cognome, data, email, null, null], // Password e nazionalità non sono specificate
-          function (err) {
-            if (err) {
-              console.error('Errore durante l\'inserimento dell\'utente:', err.message);
+          [nome, cognome, data, email, null, nazionalita], 
+          function (insertErr) {
+            if (insertErr) {
+              console.error('Errore durante l\'inserimento dell\'utente:', insertErr);
               return res.status(500).json({ error: 'Errore nel salvataggio dell\'utente' });
             }
-            console.log('Utente creato con ID:', this.lastID);
-            res.json({ 
-              message: 'Registrazione con Google completata',
-              user: { id: this.lastID, nome, cognome, email, username }
+            
+            // Crea sessione per il nuovo utente
+            req.session.loggedin = true;
+            req.session.userId = this.lastID;
+            req.session.email = email;
+
+            req.session.save((saveErr) => {
+              if (saveErr) {
+                console.error('Errore nel salvare la sessione:', saveErr);
+                return res.status(500).json({ error: 'Errore nel salvataggio della sessione' });
+              }
+
+              res.json({ 
+                message: 'Registrazione con Google completata',
+                email: email,
+                nome: nome,
+                cognome: cognome,
+                userId: this.lastID,
+                isAdmin: false,
+                googleAuth: true
+              });
             });
           }
         );
       } else {
-        // L'utente esiste già, ritorna le sue informazioni
-        console.log('Utente già registrato:', user);
-        res.json({ 
-          message: 'Login con Google riuscito', 
-          user 
+        // Utente esistente
+        req.session.loggedin = true;
+        req.session.userId = user.id;
+        req.session.email = email;
+
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error('Errore nel salvare la sessione:', saveErr);
+            return res.status(500).json({ error: 'Errore nel salvataggio della sessione' });
+          }
+
+          res.json({ 
+            message: 'Login con Google riuscito', 
+            email: email,
+            nome: nome,
+            cognome: cognome,
+            userId: user.id,
+            isAdmin: false,
+            googleAuth: true
+          });
         });
       }
     });
   } catch (error) {
-    console.error('Errore durante la verifica del token ID:', error.message);
-    res.status(401).json({ message: 'Token ID non valido' });
+    console.error('Errore durante la verifica del token:', error);
+    res.status(401).json({ 
+      message: 'Token ID non valido', 
+      errorDetails: error.message 
+    });
   }
 });
 

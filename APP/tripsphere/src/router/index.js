@@ -7,11 +7,12 @@ import AccountView from '@/views/AccountView.vue';
 import AdminView from '@/views/AdminView.vue';
 
 const isAuthenticated = async () => {
-  const userEmail = localStorage.getItem('email');
-  const userPassword = localStorage.getItem('password');
+  //const userEmail = localStorage.getItem('email');
+  //const userPassword = localStorage.getItem('password');
   const loggedIn = localStorage.getItem('loggedIn') === 'true';
   const googleAuth = localStorage.getItem('googleAuth') === 'true'; // Controllo Google OAuth
-  const isAdmin = userEmail === 'admin@admin.it' && userPassword === 'admin';
+  const isAdmin = localStorage.getItem('isAdmin') === 'true'; 
+  //const isAdmin = userEmail === 'admin@admin.it' && userPassword === 'admin';
 
   if (loggedIn || googleAuth) {
     return { loggedIn: true, isAdmin, googleAuth };
@@ -67,7 +68,7 @@ const router = createRouter({
 // Vue Router - router/index.js
 router.beforeEach(async (to, from, next) => {
   try {
-    const { loggedIn, isAdmin, googleAuth } = await isAuthenticated(); // Controlla lo stato di autenticazione
+    const { loggedIn, isAdmin } = await isAuthenticated(); // Controlla lo stato di autenticazione
 
     // Se la rotta richiede autenticazione
     if (to.meta.requiresAuth) {
@@ -84,8 +85,8 @@ router.beforeEach(async (to, from, next) => {
       }
     }
     // Se la rotta è la pagina di login e l'utente è già autenticato
-    else if (to.name === 'accedi' && (loggedIn || googleAuth)) {
-      if (isAdmin) {
+    else if (to.name === 'accedi' && (loggedIn)) {
+      if (isAdmin == true) {
         next('/admin');
       } else {
         next('/home');

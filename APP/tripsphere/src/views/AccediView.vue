@@ -42,32 +42,23 @@ export default {
     };
   },
   methods: {
+    // Login manuale
     async loginUser() {
       try {
         const response = await fetch('http://localhost:3000/accedi', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          //body: JSON.stringify({ email: this.email, password: this.password }),
           body: JSON.stringify({ email: this.email, password: this.password }),
+
         });
+
         const result = await response.json();
 
         if (response.ok) {
           this.successMessage = 'Login effettuato con successo!';
           this.errorMessage = '';
-          this.isLoggedIn = true;
-
-          // Salva lo stato in localStorage
-          localStorage.setItem('loggedIn', 'true');
-          localStorage.setItem('email', this.email);
-          localStorage.setItem('isAdmin', result.isAdmin ? 'true' : 'false');
-          localStorage.setItem('googleAuth', 'false'); // Login manuale
-
-          // Reindirizza in base al ruolo
-          if (result.isAdmin) {
-            this.$router.push('/admin');
-          } else {
-            this.$router.push('/home');
-          }
+          this.saveUserSession(result);
         } else {
           this.errorMessage = result.message || 'Credenziali errate.';
           this.successMessage = '';
@@ -77,35 +68,60 @@ export default {
         this.successMessage = '';
       }
     },
-    handleCredentialResponse(response) {
-      const token = response.credential;
-      if (token) {
-        localStorage.setItem('loggedIn', 'true');
-        localStorage.setItem('googleAuth', 'true');
-        localStorage.setItem('token', token);
 
-        // Reindirizza alla homepage
-        this.$router.push('/home');
+    // Login tramite Google OAuth
+    async handleCredentialResponse(response) {
+      const token = response.credential;
+
+      try {
+        const res = await fetch('http://localhost:3000/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ credential: token }), // Change from idToken to credential
+        });
+
+        const result = await res.json();
+
+        if (res.ok) {
+          this.successMessage = 'Login con Google effettuato con successo!';
+          this.errorMessage = '';
+          this.saveUserSession(result);
+        } else {
+          this.errorMessage = result.message || "Errore durante l'accesso con Google.";
+        }
+      } catch (error) {
+        this.errorMessage = 'Errore di connessione al server.';
       }
+    },
+    // Salva la sessione utente e reindirizza
+    saveUserSession(userData) {
+      this.isLoggedIn = true;
+      localStorage.setItem('loggedIn', 'true');
+      localStorage.setItem('email', userData.email);
+      localStorage.setItem('isAdmin', userData.isAdmin ? 'true' : 'false');
+      localStorage.setItem('googleAuth', userData.googleAuth || 'false');
+
+      // Reindirizza l'utente
+      const route = userData.isAdmin ? '/admin' : '/home';
+      this.$router.push(route);
     },
   },
   mounted() {
-  const script = document.createElement('script');
-  script.src = 'https://accounts.google.com/gsi/client';
-  script.async = true;
-  script.onload = () => {
-    window.google.accounts.id.initialize({
-      client_id: '114549057021-1regresnv2eue5ig42h76idmn34rh38s.apps.googleusercontent.com',
-      callback: this.handleCredentialResponse,
-    });
-    window.google.accounts.id.renderButton(
-      document.getElementById('google-button'),
-      { theme: 'outline', size: 'large' }
-    );
-  };
-  document.head.appendChild(script);
-}
-
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.onload = () => {
+      window.google.accounts.id.initialize({
+        client_id: '114549057021-1regresnv2eue5ig42h76idmn34rh38s.apps.googleusercontent.com',
+        callback: this.handleCredentialResponse,
+      });
+      window.google.accounts.id.renderButton(
+        document.getElementById('google-button'),
+        { theme: 'outline', size: 'large' }
+      );
+    };
+    document.head.appendChild(script);
+  },
 };
 </script>
 
