@@ -21,15 +21,13 @@ const isAuthenticated = async () => {
   return { loggedIn: false, isAdmin: false, googleAuth: false };
 };
 
-
-
 // Definizione delle rotte
 const routes = [
   {
     path: '/home',
     name: 'home',
     component: HomeView,
-    //meta: { requiresAuth: true }, // Rotta protetta
+    meta: { requiresAuth: true }, // Rotta protetta
   },
   {
     path: '/',

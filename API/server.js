@@ -5,13 +5,13 @@ const session = require('express-session');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
-const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const { OAuth2Client } = require('google-auth-library');
+const CLIENT_ID = ''; // Assicurati che la variabile d'ambiente sia configurata
+const client = new OAuth2Client(CLIENT_ID);
 
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const path = require('path');
-const { Console } = require('console');
 
 const app = express();
 const port = 3000;
@@ -56,8 +56,7 @@ app.get('/', (req, res) => {
 app.use(cors({ origin: ['http://localhost:8080'], credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
-app.use(passport.initialize());
-app.use(passport.session());
+
 
 //const DBMock = require('./DBmock.js');
 //const db = new DBMock(); // Creiamo un'istanza del mock
@@ -86,93 +85,68 @@ db.run(`
   )
 `);
 
-//#region Goggle Auth
-passport.use(new GoogleStrategy({
-  
-  callbackURL: 'http://localhost:3000/auth/google/callback',
-  passReqToCallback: true,
-  scope: [
-    'https://www.googleapis.com/auth/userinfo.profile',
-    'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.password'
-  ]
-},
-  (req, accessToken, refreshToken, profile, done) => {
-    try {
-      // Log completo del profilo di Google
-      console.log('Full Google Profile:', JSON.stringify(profile, null, 2));
+//#region Google OAuth
 
-      // Estrarre l'email dal profilo
-      const email =
-        profile.emails?.[0]?.value ||
-        profile._json?.email ||
-        `${profile.id}@googleid.com`;
+app.post('/auth/google', async (req, res) => {
+  const { idToken } = req.body;
 
-      // Se non c'è un'email, restituire un errore
-      if (!email) {
-        return done(new Error('Cannot retrieve email from Google profile'));
+  try {
+    // Verifica il token ID con Google
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: CLIENT_ID, // Deve corrispondere al CLIENT_ID della tua app Google
+    });
+
+    const payload = ticket.getPayload();
+    const email = payload.email;
+    const nome = payload.given_name || '';
+    const cognome = payload.family_name || '';
+    const username = email.split('@')[0];
+    const data = new Date().toISOString().split('T')[0]; // Data attuale in formato YYYY-MM-DD
+
+    console.log('Utente verificato con Google:', payload);
+
+    // Controlla se l'utente esiste già nel database
+    db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, user) => {
+      if (err) {
+        console.error('Errore durante la query SELECT:', err.message);
+        return res.status(500).json({ error: 'Errore del database' });
       }
 
-      // Estrazione del nome e cognome in modo sicuro
-      const firstName = profile.name?.givenName || profile.displayName?.split(' ')[0] || 'Google';
-      const lastName = profile.name?.familyName || profile.displayName?.split(' ').slice(1).join(' ') || 'User';
-
-      // Verifica se l'utente esiste nel database
-      db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, row) => {
-        if (err) return done(err);
-
-        // Se l'utente non esiste, lo creiamo
-        if (!row) {
-          db.run(
-            `INSERT INTO utenti (nome, cognome, email) VALUES (?, ?, ?)`,
-            [firstName, lastName, email],
-            function (insertErr) {
-              if (insertErr) return done(insertErr);
-
-              // Passiamo il profilo dell'utente creato
-              const userProfile = { ...profile, email };
-              return done(null, userProfile);
+      if (!user) {
+        // L'utente non esiste, crealo
+        console.log('Utente non trovato, creazione in corso...');
+        db.run(
+          `INSERT INTO utenti (nome, cognome, data, email, password, nazionalita) 
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          [nome, cognome, data, email, null, null], // Password e nazionalità non sono specificate
+          function (err) {
+            if (err) {
+              console.error('Errore durante l\'inserimento dell\'utente:', err.message);
+              return res.status(500).json({ error: 'Errore nel salvataggio dell\'utente' });
             }
-          );
-        } else {
-          // Se l'utente esiste, facciamo login
-          const userProfile = { ...profile, email };
-          return done(null, userProfile);
-        }
-      });
-    } catch (error) {
-      console.error('Google OAuth Error:', error);
-      return done(error);
-    }
-  }));
-
-// Serialize user for session management
-passport.serializeUser((user, done) => {
-  done(null, user.email);
-});
-
-// Deserialize user from session
-passport.deserializeUser((email, done) => {
-  db.get(`SELECT * FROM utenti WHERE email = ?`, [email], (err, user) => {
-    if (err) return done(err);
-    done(null, user);
-  });
-});
-
-app.get('/auth/google',
-  passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/plus.login'] })
-);
-// Il callback di Google dopo l'autenticazione
-app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/accedi' }),
-  (req, res) => {
-    req.session.loggedin = true;
-    req.session.userId = req.user.id; // Puoi usare req.user per ottenere i dettagli dell'utente
-    // Reindirizza al frontend, includendo un token o altre informazioni utente
-    console.log("COSO RIUSCITO");
-    res.redirect(`http://localhost:8080/home?token=${req.sessionID}`); // Puoi passare l'ID della sessione o un token JWT
+            console.log('Utente creato con ID:', this.lastID);
+            res.json({ 
+              message: 'Registrazione con Google completata',
+              user: { id: this.lastID, nome, cognome, email, username }
+            });
+          }
+        );
+      } else {
+        // L'utente esiste già, ritorna le sue informazioni
+        console.log('Utente già registrato:', user);
+        res.json({ 
+          message: 'Login con Google riuscito', 
+          user 
+        });
+      }
+    });
+  } catch (error) {
+    console.error('Errore durante la verifica del token ID:', error.message);
+    res.status(401).json({ message: 'Token ID non valido' });
   }
-);
+});
+
 //#endregion
 
 /**
