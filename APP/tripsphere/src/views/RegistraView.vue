@@ -116,10 +116,11 @@ export default {
   max-width: 400px;
   margin: 0 auto;
   padding: 2rem;
-  background-color: #f9f9f9;
+  background-color: white;
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   text-align: center;
+  animation: fadeIn 0.5s ease-in-out;
 }
 
 h2 {
@@ -146,7 +147,7 @@ input {
   font-size: 16px;
   border: 1px solid #ddd;
   border-radius: 12px;
-  background-color: #fff;
+  background-color: #f9f9f9;
   color: #333;
   margin-right: 10px; /* Spazio a destra */
   outline: none;
@@ -197,4 +198,16 @@ input:focus {
 .login-link a:hover {
   text-decoration: underline;
 }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 </style>
