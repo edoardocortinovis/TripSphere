@@ -60,14 +60,14 @@ app.use(cookieParser());
 app.use(express.json());
 
 
-//const DBMock = require('./DBmock.js');
-//const db = new DBMock(); // Creiamo un'istanza del mock
+const DBMock = require('./DBmock.js');
+const db = new DBMock(); // Creiamo un'istanza del mock
 
-const db = new sqlite3.Database('./database.db', (err) => {
+/*const db = new sqlite3.Database('./database.db', (err) => {
   if (err) return console.error('Errore connessione DB:', err.message);
   console.log('Connesso al database SQLite');
 });
-
+*/
 
 
 // Creazione della tabella utenti se non esiste

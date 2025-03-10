@@ -15,7 +15,7 @@ class DBMock {
                 nome: 'Edoardo',
                 cognome: 'Cortinovis',
                 data: '1985-05-15',
-                nazionalita: 'Statunitense',
+                nazionalita: 'Italiana',
                 email: 'edo.corti@mail.com',
                 password: 'edo'
             },
@@ -24,7 +24,7 @@ class DBMock {
                 nome: 'Cristiano',
                 cognome: 'Ronaldo',
                 data: '1985-05-15',
-                nazionalita: 'Italiana',
+                nazionalita: 'Portoghese',
                 email: 'cr7@mail.com',
                 password: 'cr7'
             }
@@ -74,21 +74,33 @@ class DBMock {
             return callback(null, null);
         }
     
+        if (query.includes('FROM utenti WHERE nazionalita = ?')) {
+            // Filtra gli utenti per nazionalità
+            const filteredUsers = this.utenti.filter(u => u.nazionalita === params[0]);
+            return callback(null, filteredUsers);
+        }
+    
         return callback(new Error('Query non supportata'));
     }
     
-    
-
     all(query, params, callback) {
         if (query.startsWith('SELECT * FROM utenti')) {
+    
             if (params && params.length > 0) {
-                const filteredUsers = this.utenti.filter(u => u.nazionalita === params[0]);
+                // Aggiunto controllo per nazionalita
+                const nazionalitaFiltrata = params[0];
+                
+                const filteredUsers = this.utenti.filter(u => u.nazionalita.toLowerCase() === nazionalitaFiltrata.toLowerCase());
+    
                 return callback(null, filteredUsers);
             }
+    
+            // Se non c'è filtro, restituiamo tutti gli utenti
             return callback(null, this.utenti);
         }
         return callback(new Error('Query non supportata'));
     }
+    
 
     close(callback) {
         console.log('Mock DB chiuso');
