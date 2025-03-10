@@ -6,7 +6,7 @@
       </div>
       <div class="account-area">
         <div class="live-user">
-          <p>UTENTI COLLEGATI :</p>
+          <p>UTENTI COLLEGATI : {{ connectedUsers }}      , </p>
         </div>
         <div class="account-icon">
           <a class="account-text" @click="goToAccount">Account</a>
@@ -45,7 +45,9 @@ export default {
   data() {
     return {
       searchQuery: '',
-      cards: [] // Verrà popolato con i dati dell'API
+      cards: [], // Verrà popolato con i dati dell'API
+      connectedUsers: 0, // Variabile per memorizzare il numero di utenti connessi
+      ws: null, // Oggetto WebSocket
     };
   },
   computed: {
@@ -94,11 +96,42 @@ export default {
     },
     goToAccount() {
       this.$router.push('/account');
+    },
+    setupWebSocket() {
+      // Connessione al server WebSocket
+      this.ws = new WebSocket('ws://localhost:3000');
+
+      // Gestione dei messaggi ricevuti dal server
+      this.ws.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        if (message.type === 'connectedUsers') {
+          this.connectedUsers = message.count; // Aggiorna il numero di utenti connessi
+        }
+      };
+
+      // Gestione degli errori
+      this.ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+
+      // Gestione della chiusura della connessione
+      this.ws.onclose = () => {
+        console.log('WebSocket connection closed');
+      };
     }
   },
   mounted() {
     // Effettua la chiamata API una sola volta quando il componente viene montato
     this.fetchAttractions();
+
+    // Configura la connessione WebSocket
+    this.setupWebSocket();
+  },
+  beforeUnmount() {
+    // Chiudi la connessione WebSocket quando il componente viene distrutto
+    if (this.ws) {
+      this.ws.close();
+    }
   }
 };
 </script>

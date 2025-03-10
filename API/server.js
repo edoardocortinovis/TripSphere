@@ -5,6 +5,8 @@ require('dotenv').config();
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
+const http = require('http');
+const WebSocket = require('ws');
 
 const { OAuth2Client } = require('google-auth-library');
 const CLIENT_ID = process.env.CLIENT_ID;
@@ -15,8 +17,40 @@ const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const path = require('path');
 
+
+
 const app = express();
 const port = 3000;
+
+const server = http.createServer(app);
+
+const wss = new WebSocket.Server({ noServer: true });
+
+
+let connectedUsers = 0;
+
+wss.on('connection', (ws) => {
+  console.log('Nuova connessione WebSocket');
+  connectedUsers++;
+
+  // Invia il numero aggiornato di utenti connessi a tutti i client
+  broadcastConnectedUsers();
+
+  // Gestione della chiusura della connessione
+  ws.on('close', () => {
+    console.log('Connessione WebSocket chiusa');
+    connectedUsers--;
+    broadcastConnectedUsers();
+  });
+});
+
+function broadcastConnectedUsers() {
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ type: 'connectedUsers', count: connectedUsers }));
+    }
+  });
+}
 
 app.use(
   session({
@@ -67,7 +101,6 @@ const db = new sqlite3.Database('./database.db', (err) => {
   if (err) return console.error('Errore connessione DB:', err.message);
   console.log('Connesso al database SQLite');
 });
-
 
 
 // Creazione della tabella utenti se non esiste
@@ -553,8 +586,19 @@ app.get('/utenti/filtrati', (req, res) => {
 //#endregion
 
 // Avvio del server
-app.listen(port, () => {
+/*app.listen(port, () => {
   console.log(`Server API in esecuzione su http://localhost:${port}`);
+});*/
+
+server.on('upgrade', (request, socket, head) => {
+  wss.handleUpgrade(request, socket, head, (ws) => {
+    wss.emit('connection', ws, request);
+  });
+});
+
+
+server.listen(port, () => {
+  console.log(`Server API e WebSocket in esecuzione su http://localhost:${port}`);
 });
 
 // Chiusura sicura del database
