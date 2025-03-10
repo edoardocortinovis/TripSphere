@@ -60,14 +60,14 @@ app.use(cookieParser());
 app.use(express.json());
 
 
-const DBMock = require('./DBmock.js');
-const db = new DBMock(); // Creiamo un'istanza del mock
+/*const DBMock = require('./DBmock.js');
+const db = new DBMock(); // Creiamo un'istanza del mock*/
 
-/*const db = new sqlite3.Database('./database.db', (err) => {
+const db = new sqlite3.Database('./database.db', (err) => {
   if (err) return console.error('Errore connessione DB:', err.message);
   console.log('Connesso al database SQLite');
 });
-*/
+
 
 
 // Creazione della tabella utenti se non esiste
@@ -401,6 +401,65 @@ app.post('/logout', (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /account:
+ *   get:
+ *     summary: Recupera i dettagli dell'account dell'utente loggato
+ *     description: Restituisce i dati dell'utente loggato (se autenticato), altrimenti restituisce un errore.
+ *     responses:
+ *       200:
+ *         description: Dettagli dell'account dell'utente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 name:
+ *                   type: string
+ *                   description: Il nome dell'utente
+ *                   example: "Edoardo Cortinovis"
+ *                 email:
+ *                   type: string
+ *                   description: L'email dell'utente
+ *                   example: "edo.corti@mail.com"
+ *                 favorites:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   description: La lista dei preferiti dell'utente
+ *                   example: ["Film 1", "Film 2"]
+ *       401:
+ *         description: L'utente non è autenticato
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Non autenticato"
+ *       404:
+ *         description: Utente non trovato
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Utente non trovato"
+ *       500:
+ *         description: Errore del server
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Database error"
+ */
 app.get('/account', (req, res) => {
   if (req.session.loggedin) {
     const userId = req.session.userId; // L'id dell'utente che è loggato
