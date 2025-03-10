@@ -248,6 +248,7 @@ app.post('/registra', (req, res) => {
 app.post('/accedi', (req, res) => {
   const { email, password } = req.body;
   console.log('Tentativo di login con email:', email);
+  console.log('pw: ', password)
 
   // Admin login check
   if (email === 'admin@admin.it' && password === 'admin') {
@@ -337,11 +338,14 @@ app.post('/accedi', (req, res) => {
       );
     } else {
       // Existing user login
+      // Confronta la password con quella memorizzata nel database mock
       if (row.password !== password) {
+        console.log('SPRAS', password, row.password)
         return res.status(401).json({
           success: false,
           message: 'Password errata'
         });
+        
       }
 
       // Create session for existing user
@@ -371,6 +375,7 @@ app.post('/accedi', (req, res) => {
     }
   });
 });
+
 
 /**
  * @swagger
@@ -464,6 +469,7 @@ app.delete('/utenti/:id', (req, res) => {
 });
 //#endregion
 
+//#region  AJAX
 //GESTIONE UTENTI AJAX
 app.get('/utenti', (req, res) => {
   db.all(`SELECT * FROM utenti`, [], (err, rows) => {
@@ -485,6 +491,7 @@ app.get('/utenti/filtrati', (req, res) => {
     res.json({ utenti: rows });
   });
 });
+//#endregion
 
 // Avvio del server
 app.listen(port, () => {

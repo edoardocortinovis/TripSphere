@@ -5,13 +5,8 @@
         <h1>TripSphere</h1>
       </div>
       <div class="account-area">
-        <div class="language-selector">
-          <select v-model="selectedLanguage" @change="changeLanguage">
-            <option value="en">English</option>
-            <option value="it">Italiano</option>
-            <option value="fr">Français</option>
-            <option value="de">Deutsch</option>
-          </select>
+        <div class="live-user">
+          <p>UTENTI COLLEGATI :    </p>
         </div>
         <div class="account-icon">
           <!--<img :src="require('@/assets/aerei.png')" @click="goToAccount" />-->
@@ -111,8 +106,16 @@ header {
 
 .account-text {
   cursor: pointer;
+  color: white;
   margin-right: 20px;
   margin-left: 10px;
+  background-color: rgb(219, 143, 0);
+  border-radius: 10px;
+  padding: 8px;
+}
+
+.account-text:hover {
+  background-color: rgb(169, 110, 1);
 }
 
 .account-icon {
@@ -125,10 +128,10 @@ header {
   white-space: nowrap;
 }
 
-.language-selector select {
+.live-user select {
   border: none;
   background-color: white;
-  padding: 5px;
+  padding: 10px;
   margin-right: 20px;
   font-size: 1em;
 }
