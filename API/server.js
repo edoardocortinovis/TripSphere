@@ -1,12 +1,13 @@
 const express = require('express');
 const sqlite3 = require('sqlite3');
 const cors = require('cors');
+require('dotenv').config();
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const { OAuth2Client } = require('google-auth-library');
-const CLIENT_ID = '114549057021-1regresnv2eue5ig42h76idmn34rh38s.apps.googleusercontent.com'; // Assicurati che la variabile d'ambiente sia configurata
+const CLIENT_ID = process.env.CLIENT_ID;
 const client = new OAuth2Client(CLIENT_ID);
 
 
@@ -19,7 +20,7 @@ const port = 3000;
 
 app.use(
   session({
-    secret: 'TripsphereEdoCorti',
+    secret:  process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: {
