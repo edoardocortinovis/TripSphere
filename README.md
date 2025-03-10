@@ -1,5 +1,9 @@
 # TripSphere
 
+ajax = http://localhost:3000/index.html
+swagger = http://localhost:3000/api-docs/
+
+
 **TtripSphere è un' applicazione per l'organizzazione di viaggi** 
 
 L'app è un applicazione che arriva in aiuto a tutti i turisti, serve per - l'organizzazione di viaggi - e avere un elenco dettagliato delle migliori attrazioni per quel luogo, consultando le recensioni sui vari posti nel mondo, cosi da poter scegliere il proprio viaggio al meglio.
