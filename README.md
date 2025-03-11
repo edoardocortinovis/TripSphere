@@ -1,7 +1,11 @@
 # TripSphere
 
-ajax = http://localhost:3000/index.html
-swagger = http://localhost:3000/api-docs/
+- ajax = http://localhost:3000/index.html
+- swagger = http://localhost:3000/api-docs/
+- email login = test@gmail.com , password = Ed
+- admin login = admin@admin.it, password = admin
+- api 3 parti = cards homepage
+- counter in alto a destra
 
 
 **TtripSphere è un' applicazione per l'organizzazione di viaggi** 
