@@ -2,11 +2,25 @@
 
 - ajax = http://localhost:3000/index.html
 - swagger = http://localhost:3000/api-docs/
-- email login = test@gmail.com , password = Ed
+- email login = edoardocortinivis@gmail.com, password = Ed
 - admin login = admin@admin.it, password = admin
 - api 3 parti = cards homepage
 - counter in alto a destra
 
+entrare nella cartella **API**
+```
+npm init
+npm install sqlite3
+npm install 20
+npm rebuild sqlite3 --build-from-source
+```
+
+entrare nella cartella **APP**
+entrare nella cartella **tripsphere**
+```
+npm install
+npm run serve
+```
 
 **TtripSphere è un' applicazione per l'organizzazione di viaggi** 
 
