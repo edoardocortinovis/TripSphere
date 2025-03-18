@@ -7,12 +7,23 @@
 - api 3 parti = cards homepage
 - counter in alto a destra
 
+requisiti installati 
+apk add git
+apk add nano
+node (nano /etc/apk/repositories) entrare in questa cartella e discommentare la seconda riga
+apk add nodejs npm
+[git clone https](https://github.com/edoardocortinovis/TripSphere.git)
+
+
 entrare nella cartella **API**
 ```
 npm init
+npm install python3
 npm install sqlite3
-npm install 20
+apk add --no-cache make gcc g++ python3 nodejs (creiamo tutte le dipendenze, quindi installiamo sqlite3 per poi rebuildarlo)
 npm rebuild sqlite3 --build-from-source
+
+node server.js
 ```
 
 entrare nella cartella **APP**
