@@ -8,11 +8,11 @@
 - counter in alto a destra
 
 requisiti installati 
-apk add git
-apk add nano
-node (nano /etc/apk/repositories) entrare in questa cartella e discommentare la seconda riga
+- apk add git
+- apk add nano
+- node (nano /etc/apk/repositories) entrare in questa cartella e discommentare la seconda riga
 apk add nodejs npm
-[git clone https](https://github.com/edoardocortinovis/TripSphere.git)
+- [git clone https](https://github.com/edoardocortinovis/TripSphere.git)
 
 
 entrare nella cartella **API**
