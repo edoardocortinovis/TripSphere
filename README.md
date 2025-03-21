@@ -21,7 +21,7 @@ npm init
 npm install python3
 npm install sqlite3
 npm install --no-cache make gcc g++ python3 nodejs #(creiamo tutte le dipendenze, quindi installiamo sqlite3 per poi rebuildarlo)
-npm rebuild sqlite3 --build-from-source
+npm rebuild sqlite3 --save
 
 node server.js
 ```
