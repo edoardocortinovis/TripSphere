@@ -1,8 +1,37 @@
 # TripSphere
 
-ajax = http://localhost:3000/index.html
-swagger = http://localhost:3000/api-docs/
+- ajax = http://localhost:3000/index.html
+- swagger = http://localhost:3000/api-docs/
+- email login = edoardocortinivis@gmail.com, password = Ed
+- admin login = admin@admin.it, password = admin
+- api 3 parti = cards homepage
+- counter in alto a destra
 
+requisiti installati 
+- apk add git
+- apk add nano
+- node (nano /etc/apk/repositories) entrare in questa cartella e discommentare la seconda riga
+apk add nodejs npm
+- [git clone https](https://github.com/edoardocortinovis/TripSphere.git)
+
+
+entrare nella cartella **API**
+```
+npm init
+npm install python3
+npm install sqlite3
+npm install --no-cache make gcc g++ python3 nodejs #(creiamo tutte le dipendenze, quindi installiamo sqlite3 per poi rebuildarlo)
+npm rebuild sqlite3 --save
+
+node server.js
+```
+
+entrare nella cartella **APP**
+entrare nella cartella **tripsphere**
+```
+npm install
+npm run serve
+```
 
 **TtripSphere è un' applicazione per l'organizzazione di viaggi** 
 
