@@ -16,6 +16,8 @@ sudo ./setup_tripsphere.sh
 comando per collegarsi tramite ssh: ssh -p 2222 mastroiannim@localhost
 
 
+eseguire il file esegui.bat con privilegi amministratore 
+
 requisiti installati 
 - apk update
 - apk add git
