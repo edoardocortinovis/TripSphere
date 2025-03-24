@@ -12,6 +12,8 @@ REQUISTI MINIMI
 ```
 sudo ./setup_tripsphere.sh
 ```
+comando per collegarsi tramite ssh: ssh -p 2222 mastroiannim@localhost
+
 
 requisiti installati 
 - apk update
