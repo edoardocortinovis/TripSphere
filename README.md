@@ -10,6 +10,7 @@
 REQUISTI MINIMI
 - Virtual Machine
 ```
+su root
 sudo ./setup_tripsphere.sh
 ```
 comando per collegarsi tramite ssh: ssh -p 2222 mastroiannim@localhost
