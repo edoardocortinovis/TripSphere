@@ -8,6 +8,7 @@
 - counter in alto a destra
 
 requisiti installati 
+- apk update
 - apk add git
 - apk add nano
 - node (nano /etc/apk/repositories) entrare in questa cartella e discommentare la seconda riga
