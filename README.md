@@ -7,6 +7,10 @@
 - api 3 parti = cards homepage
 - counter in alto a destra
 
+REQUISTI MINIMI
+- Virtual Machine
+fallo partire con : sudo ./setup_tripsphere.sh
+
 requisiti installati 
 - apk update
 - apk add git
