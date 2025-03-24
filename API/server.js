@@ -1,12 +1,15 @@
 const express = require('express');
-const sqlite3 = require('sqlite3');
+const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
+require('dotenv').config();
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
+const http = require('http');
+const WebSocket = require('ws');
 
 const { OAuth2Client } = require('google-auth-library');
-const CLIENT_ID = '114549057021-1regresnv2eue5ig42h76idmn34rh38s.apps.googleusercontent.com'; // Assicurati che la variabile d'ambiente sia configurata
+const CLIENT_ID = process.env.CLIENT_ID;
 const client = new OAuth2Client(CLIENT_ID);
 
 const swaggerJsDoc = require('swagger-jsdoc');
@@ -16,9 +19,39 @@ const path = require('path');
 const app = express();
 const port = 3000;
 
+const server = http.createServer(app);
+
+const wss = new WebSocket.Server({ noServer: true });
+
+
+let connectedUsers = 0;
+
+wss.on('connection', (ws) => {
+  console.log('Nuova connessione WebSocket');
+  connectedUsers++;
+
+  // Invia il numero aggiornato di utenti connessi a tutti i client
+  broadcastConnectedUsers();
+
+  // Gestione della chiusura della connessione
+  ws.on('close', () => {
+    console.log('Connessione WebSocket chiusa');
+    connectedUsers--;
+    broadcastConnectedUsers();
+  });
+});
+
+function broadcastConnectedUsers() {
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ type: 'connectedUsers', count: connectedUsers }));
+    }
+  });
+}
+
 app.use(
   session({
-    secret: 'TripsphereEdoCorti',
+    secret:  process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: {
@@ -58,14 +91,13 @@ app.use(cookieParser());
 app.use(express.json());
 
 
-//const DBMock = require('./DBmock.js');
-//const db = new DBMock(); // Creiamo un'istanza del mock
+/*const DBMock = require('./DBmock.js');
+const db = new DBMock(); // Creiamo un'istanza del mock*/
 
 const db = new sqlite3.Database('./database.db', (err) => {
   if (err) return console.error('Errore connessione DB:', err.message);
   console.log('Connesso al database SQLite');
 });
-
 
 
 // Creazione della tabella utenti se non esiste
@@ -246,6 +278,7 @@ app.post('/registra', (req, res) => {
 app.post('/accedi', (req, res) => {
   const { email, password } = req.body;
   console.log('Tentativo di login con email:', email);
+  console.log('pw: ', password)
 
   // Admin login check
   if (email === 'admin@admin.it' && password === 'admin') {
@@ -335,11 +368,14 @@ app.post('/accedi', (req, res) => {
       );
     } else {
       // Existing user login
+      // Confronta la password con quella memorizzata nel database mock
       if (row.password !== password) {
+        console.log('SPRAS', password, row.password)
         return res.status(401).json({
           success: false,
           message: 'Password errata'
         });
+        
       }
 
       // Create session for existing user
@@ -370,6 +406,7 @@ app.post('/accedi', (req, res) => {
   });
 });
 
+
 /**
  * @swagger
  * /logout:
@@ -394,6 +431,65 @@ app.post('/logout', (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /account:
+ *   get:
+ *     summary: Recupera i dettagli dell'account dell'utente loggato
+ *     description: Restituisce i dati dell'utente loggato (se autenticato), altrimenti restituisce un errore.
+ *     responses:
+ *       200:
+ *         description: Dettagli dell'account dell'utente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 name:
+ *                   type: string
+ *                   description: Il nome dell'utente
+ *                   example: "Edoardo Cortinovis"
+ *                 email:
+ *                   type: string
+ *                   description: L'email dell'utente
+ *                   example: "edo.corti@mail.com"
+ *                 favorites:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   description: La lista dei preferiti dell'utente
+ *                   example: ["Film 1", "Film 2"]
+ *       401:
+ *         description: L'utente non è autenticato
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Non autenticato"
+ *       404:
+ *         description: Utente non trovato
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Utente non trovato"
+ *       500:
+ *         description: Errore del server
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Database error"
+ */
 app.get('/account', (req, res) => {
   if (req.session.loggedin) {
     const userId = req.session.userId; // L'id dell'utente che è loggato
@@ -462,6 +558,7 @@ app.delete('/utenti/:id', (req, res) => {
 });
 //#endregion
 
+//#region  AJAX
 //GESTIONE UTENTI AJAX
 app.get('/utenti', (req, res) => {
   db.all(`SELECT * FROM utenti`, [], (err, rows) => {
@@ -483,10 +580,22 @@ app.get('/utenti/filtrati', (req, res) => {
     res.json({ utenti: rows });
   });
 });
+//#endregion
 
 // Avvio del server
-app.listen(port, () => {
+/*app.listen(port, () => {
   console.log(`Server API in esecuzione su http://localhost:${port}`);
+});*/
+
+server.on('upgrade', (request, socket, head) => {
+  wss.handleUpgrade(request, socket, head, (ws) => {
+    wss.emit('connection', ws, request);
+  });
+});
+
+
+server.listen(port, () => {
+  console.log(`Server API e WebSocket in esecuzione su http://localhost:${port}`);
 });
 
 // Chiusura sicura del database

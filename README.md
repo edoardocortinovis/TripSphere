@@ -1,5 +1,48 @@
 # TripSphere
 
+- ajax = http://localhost:3000/index.html
+- swagger = http://localhost:3000/api-docs/
+- email login = edoardocortinivis@gmail.com, password = Ed
+- admin login = admin@admin.it, password = admin
+- api 3 parti = cards homepage
+- counter in alto a destra
+
+REQUISTI MINIMI
+- Virtual Machine
+```
+su root
+sudo ./setup_tripsphere.sh
+```
+comando per collegarsi tramite ssh: ssh -p 2222 mastroiannim@localhost
+
+
+requisiti installati 
+- apk update
+- apk add git
+- apk add nano
+- node (nano /etc/apk/repositories) entrare in questa cartella e discommentare la seconda riga
+apk add nodejs npm
+- [git clone https](https://github.com/edoardocortinovis/TripSphere.git)
+
+
+entrare nella cartella **API**
+```
+npm init
+npm install python3
+npm install sqlite3
+npm install --no-cache make gcc g++ python3 nodejs #(creiamo tutte le dipendenze, quindi installiamo sqlite3 per poi rebuildarlo)
+npm rebuild sqlite3 --save
+
+node server.js
+```
+
+entrare nella cartella **APP**
+entrare nella cartella **tripsphere**
+```
+npm install
+npm run serve
+```
+
 **TtripSphere è un' applicazione per l'organizzazione di viaggi** 
 
 L'app è un applicazione che arriva in aiuto a tutti i turisti, serve per - l'organizzazione di viaggi - e avere un elenco dettagliato delle migliori attrazioni per quel luogo, consultando le recensioni sui vari posti nel mondo, cosi da poter scegliere il proprio viaggio al meglio.
