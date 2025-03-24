@@ -7,7 +7,17 @@
 - api 3 parti = cards homepage
 - counter in alto a destra
 
+REQUISTI MINIMI
+- Virtual Machine
+```
+su root
+sudo ./setup_tripsphere.sh
+```
+comando per collegarsi tramite ssh: ssh -p 2222 mastroiannim@localhost
+
+
 requisiti installati 
+- apk update
 - apk add git
 - apk add nano
 - node (nano /etc/apk/repositories) entrare in questa cartella e discommentare la seconda riga
