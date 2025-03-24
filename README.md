@@ -9,7 +9,9 @@
 
 REQUISTI MINIMI
 - Virtual Machine
-fallo partire con : sudo ./setup_tripsphere.sh
+```
+sudo ./setup_tripsphere.sh
+```
 
 requisiti installati 
 - apk update
