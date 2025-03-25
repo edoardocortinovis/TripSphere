@@ -2,14 +2,14 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-RUN apk add --no-cache python3 build-base
+RUN apk add --no-cache python3 gyp build-base
 
 # Copy package files
 COPY package*.json ./
 
 # Install dependencies
 RUN npm install
-RUN npm rebuild sqlite3 --build-from-source
+RUN npm install python3
 
 # Copy rest of the application
 COPY . .
