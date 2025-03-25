@@ -7,6 +7,17 @@
 - api 3 parti = cards homepage
 - counter in alto a destra
 
+# DOCKER
+------------------------------------------
+1. scaricare docker desktop
+2. verificare l'installazione
+   - ```docker --version```
+
+# Avvio TripSphere
+Fai doppio clic sul file start.bat o eseguilo dal Prompt dei comandi:
+ ```
+start.bat
+```   
 
 eseguire il file esegui.bat con privilegi amministratore 
 
