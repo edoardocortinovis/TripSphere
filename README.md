@@ -17,7 +17,10 @@
 Fai doppio clic sul file start.bat o eseguilo dal Prompt dei comandi:
  ```
 start.bat
-```   
+```
+
+
+---------------------------------------------
 
 eseguire il file esegui.bat con privilegi amministratore 
 
