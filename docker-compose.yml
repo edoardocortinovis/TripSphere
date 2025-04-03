@@ -1,28 +1,43 @@
+version: '3.8'
+
 services:
   api:
-    build: 
+    image: edocorti/tripsphere:api
+    build:
       context: ./API
       dockerfile: Dockerfile
+    container_name: tripsphere_api
     ports:
       - "3000:3000"
+    environment:
+      - NODE_ENV=production
     volumes:
       - ./API:/app
       - /app/node_modules
-    environment:
-      - NODE_ENV=development
     restart: unless-stopped
+    networks:
+      - tripsphere_net
 
-  app:
+  client:
+    image: edocorti/tripsphere:client
     build:
       context: ./APP/tripsphere
       dockerfile: Dockerfile
+    container_name: tripsphere_client
     ports:
       - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - VUE_APP_API_URL=http://api:3000
     volumes:
       - ./APP/tripsphere:/app
       - /app/node_modules
-    environment:
-      - NODE_ENV=development
     depends_on:
       - api
     restart: unless-stopped
+    networks:
+      - tripsphere_net
+
+networks:
+  tripsphere_net:
+    driver: bridge
