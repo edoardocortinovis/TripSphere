@@ -13,10 +13,11 @@
 2. verificare l'installazione
    - ```docker --version```
 
+
 # Avvio TripSphere
-Fai doppio clic sul file start.bat o eseguilo dal Prompt dei comandi:
+Entrare nella cartella del progetto e lanciare il comando: 
  ```
-start.bat
+docker-compose up -d
 ```
 
 
