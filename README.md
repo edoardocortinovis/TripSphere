@@ -2,10 +2,21 @@
 
 - ajax = http://localhost:3000/index.html
 - swagger = http://localhost:3000/api-docs/
-- email login = edoardocortinivis@gmail.com, password = Ed
-- admin login = admin@admin.it, password = admin
 - api 3 parti = cards homepage
 - counter in alto a destra
+- *email login = edoardocortinivis@gmail.com, password = Ed*
+- *admin login = admin@admin.it, password = admin*
+
+-----------------------------------------
+*JWT*
+- registra = http://localhost:8080/jwt-register
+- accedi = http://localhost:8080/jwt-login
+- profile = http://localhost:8080/jwt-profile
+
+credenziali : 
+- *email *: e@mail.it
+- *password *: EDO
+
 
 # DOCKER
 ------------------------------------------
