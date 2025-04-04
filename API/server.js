@@ -8,6 +8,10 @@ require('dotenv').config();
 const http = require('http');
 const WebSocket = require('ws');
 
+const { jwtRoutes } = require('./jwt-routes.js');
+
+
+
 const { OAuth2Client } = require('google-auth-library');
 const CLIENT_ID = process.env.CLIENT_ID;
 const client = new OAuth2Client(CLIENT_ID);
@@ -22,6 +26,7 @@ const port = 3000;
 const server = http.createServer(app);
 
 const wss = new WebSocket.Server({ noServer: true });
+
 
 
 let connectedUsers = 0;
@@ -48,6 +53,8 @@ function broadcastConnectedUsers() {
     }
   });
 }
+
+app.use(jwtRoutes);
 
 app.use(
   session({
