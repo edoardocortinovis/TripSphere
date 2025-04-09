@@ -31,7 +31,7 @@ const wss = new WebSocket.Server({ server });
 
 let connectedUsers = 0;
 
-/*wss.on('connection', (ws) => {
+wss.on('connection', (ws) => {
   console.log('Nuova connessione WebSocket');
   connectedUsers++;
 
