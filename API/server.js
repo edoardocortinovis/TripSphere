@@ -25,13 +25,13 @@ const port = 3000;
 
 const server = http.createServer(app);
 
-const wss = new WebSocket.Server({ noServer: true });
+const wss = new WebSocket.Server({ server });
 
 
 
 let connectedUsers = 0;
 
-wss.on('connection', (ws) => {
+/*wss.on('connection', (ws) => {
   console.log('Nuova connessione WebSocket');
   connectedUsers++;
 
