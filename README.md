@@ -30,9 +30,10 @@ credenziali :
 Entrare nella cartella del progetto e lanciare il comando: 
 
 ```docker pull edocorti/tripsphere:api
-   docker pull edocorti/tripsphere:client```
+   docker pull edocorti/tripsphere:client
+```
 
- ```
+```
 docker-compose up -d
 ```
 
