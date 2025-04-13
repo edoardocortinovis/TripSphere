@@ -27,6 +27,9 @@ credenziali :
    - ```docker --version```
 
 
+```docker pull edocorti/tripsphere```
+
+
 # Avvio TripSphere
 Entrare nella cartella del progetto e lanciare il comando: 
  ```
