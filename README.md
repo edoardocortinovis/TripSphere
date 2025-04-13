@@ -26,8 +26,10 @@ credenziali :
 # DOCKER
 ------------------------------------------
 1. scaricare docker desktop
-2. verificare l'installazione
-   - ```docker --version```
+2. docker pull edocorti/tripsphere:latest
+3. docker run -d -p 3000:3000 -p 8080:8080 --name tripsphere edocorti/tripsphere:latest
+
+
 
 # Avvio TripSphere
 Entrare nella cartella del progetto e lanciare il comando: 
