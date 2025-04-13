@@ -26,12 +26,12 @@ credenziali :
 2. verificare l'installazione
    - ```docker --version```
 
-
-```docker pull edocorti/tripsphere```
-
-
 # Avvio TripSphere
 Entrare nella cartella del progetto e lanciare il comando: 
+
+```docker pull edocorti/tripsphere:api
+   docker pull edocorti/tripsphere:client```
+
  ```
 docker-compose up -d
 ```
