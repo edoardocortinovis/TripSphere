@@ -26,9 +26,20 @@ credenziali :
 # DOCKER
 ------------------------------------------
 1. scaricare docker desktop
-2. docker pull edocorti/tripsphere:client
-3. docker pull edocorti/tripsphere:api
-4. docker run -d -p 3000:3000 -p 8080:8080 --name tripsphere edocorti/tripsphere:latest
+```2. docker pull edocorti/tripsphere:client```
+
+```3. docker pull edocorti/tripsphere:api```
+
+```docker run -d `
+  --name tripsphere-backend `
+  -p 3000:3000 `
+  edocorti/tripsphere:api```
+
+```docker run -d `
+  --name tripsphere-frontend `
+  -p 8080:8080 `
+  -e VITE_API_URL=http://localhost:3000 `
+  edocorti/tripsphere:client```
 
 
 
