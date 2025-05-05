@@ -4,13 +4,10 @@ const cors = require('cors');
 require('dotenv').config();
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
-require('dotenv').config();
 const http = require('http');
 const WebSocket = require('ws');
 
 const { jwtRoutes } = require('./jwt-routes.js');
-
-
 
 const { OAuth2Client } = require('google-auth-library');
 const CLIENT_ID = process.env.CLIENT_ID;
@@ -25,9 +22,9 @@ const port = 3000;
 
 const server = http.createServer(app);
 
+// Create a WebSocket server attached to the HTTP server
+// This is the correct way - no need for additional handlers
 const wss = new WebSocket.Server({ server });
-
-
 
 let connectedUsers = 0;
 
@@ -589,18 +586,7 @@ app.get('/utenti/filtrati', (req, res) => {
 });
 //#endregion
 
-// Avvio del server
-/*app.listen(port, () => {
-  console.log(`Server API in esecuzione su http://localhost:${port}`);
-});*/
-
-server.on('upgrade', (request, socket, head) => {
-  wss.handleUpgrade(request, socket, head, (ws) => {
-    wss.emit('connection', ws, request);
-  });
-});
-
-
+// Start the server - The WebSocket server will also be started as it's attached to the HTTP server
 server.listen(port, () => {
   console.log(`Server API e WebSocket in esecuzione su http://localhost:${port}`);
 });
