@@ -26,6 +26,7 @@ credenziali :
 # DOCKER
 ------------------------------------------
 1. scaricare docker desktop
+
 ```2. docker pull edocorti/tripsphere:client```
 
 ```3. docker pull edocorti/tripsphere:api```
