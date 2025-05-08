@@ -2,12 +2,7 @@
 
 - https://tripsphere-backend.onrender.com/
 - https://tripsphere-frontend.onrender.com/
-
-
-- docker run --env-file ./API/.env -p 3000:3000 backend
-
-
-
+-----------------------------------------
 - ajax = http://localhost:3000/index.html
 - swagger = http://localhost:3000/api-docs/
 - api 3 parti = cards homepage
@@ -28,6 +23,10 @@ credenziali :
 
 # DOCKER
 ------------------------------------------
+- docker start backend-container
+- docker stop backend-container
+------------------------------------------
+
 1. scaricare docker desktop
 
 ```2. docker pull edocorti/tripsphere:client```
