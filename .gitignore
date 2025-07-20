@@ -1,3 +1,10 @@
 # Ignora la cartella node_modules
 node_modules
 .env
+
+# Trading Bot Files (temporary and generated files)
+TradingBots/**/*.ex5
+TradingBots/**/*.log
+TradingBots/**/*.tmp
+TradingBots/**/temp/
+TradingBots/**/logs/
